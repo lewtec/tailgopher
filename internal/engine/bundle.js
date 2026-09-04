@@ -27412,16 +27412,16 @@ Did you specify these with the most recent transformation maps first?`
     }
     const src = r.warnings;
     const out = [];
-    const n = src && src.length != null ? Number(src.length) : 0;
-    for (let i = 0; i < n; i++) {
-      const w = src[i];
-      if (!w || typeof w !== "object") {
+    const n2 = src && src.length != null ? Number(src.length) : 0;
+    for (let i = 0; i < n2; i++) {
+      const w3 = src[i];
+      if (!w3 || typeof w3 !== "object") {
         continue;
       }
-      if (w.loc == null || typeof w.loc.line !== "number") {
-        w.loc = { line: 1, column: 1 };
+      if (w3.loc == null || typeof w3.loc.line !== "number") {
+        w3.loc = { line: 1, column: 1 };
       }
-      out.push(w);
+      out.push(w3);
     }
     r.warnings = out;
     return r;
@@ -29547,20 +29547,20 @@ ${t.join(`
   var import_fs2 = __toESM(__require("fs"), 1);
   var import_path3 = __toESM(__require("path"), 1);
   var skipDir = /* @__PURE__ */ new Set(["node_modules", ".git", "dist", "vendor"]);
-  var _Scanner_instances, collect_fn, extract_fn;
-  var Scanner = class {
+  var _ShimScanner_instances, collect_fn, extract_fn;
+  var ShimScanner = class {
     constructor(opts = {}) {
-      __privateAdd(this, _Scanner_instances);
+      __privateAdd(this, _ShimScanner_instances);
       this.sources = opts.sources || [];
       this._files = [];
       this._scanned = [];
     }
     scan() {
       const candidates = /* @__PURE__ */ new Set();
-      this._files = __privateMethod(this, _Scanner_instances, collect_fn).call(this);
+      this._files = __privateMethod(this, _ShimScanner_instances, collect_fn).call(this);
       this._scanned = this._files.slice();
       for (const file of this._files) {
-        __privateMethod(this, _Scanner_instances, extract_fn).call(this, readText(file), candidates);
+        __privateMethod(this, _ShimScanner_instances, extract_fn).call(this, readText(file), candidates);
       }
       return Array.from(candidates);
     }
@@ -29571,7 +29571,7 @@ ${t.join(`
         if (item.file) {
           this._scanned.push(item.file);
         }
-        __privateMethod(this, _Scanner_instances, extract_fn).call(this, content, candidates);
+        __privateMethod(this, _ShimScanner_instances, extract_fn).call(this, content, candidates);
       }
       return Array.from(candidates);
     }
@@ -29592,65 +29592,7 @@ ${t.join(`
       return this.sources.map((s) => ({ base: s.base, pattern: s.pattern }));
     }
   };
-  var ShimScanner = Scanner;
-  if (typeof globalThis.__tw_oxide_scanner === "function") {
-    const Official = globalThis.__tw_oxide_scanner;
-    Scanner = class {
-      constructor(opts = {}) {
-        this._opts = opts;
-        this._shim = null;
-        try {
-          this._native = new Official(opts);
-        } catch {
-          this._native = null;
-          this._shim = new ShimScanner(opts);
-        }
-      }
-      scan() {
-        return this._call("scan", []);
-      }
-      scanFiles(input) {
-        return this._call("scanFiles", [input]);
-      }
-      getCandidatesWithPositions(input) {
-        return this._call("getCandidatesWithPositions", [input]);
-      }
-      get files() {
-        return this._get("files");
-      }
-      get scannedFiles() {
-        return this._get("scannedFiles");
-      }
-      get globs() {
-        return this._get("globs");
-      }
-      get normalizedSources() {
-        return this._get("normalizedSources");
-      }
-      _impl() {
-        return this._shim || this._native;
-      }
-      _fallback() {
-        if (!this._shim) this._shim = new ShimScanner(this._opts);
-        return this._shim;
-      }
-      _call(name, args) {
-        try {
-          return this._impl()[name](...args);
-        } catch {
-          return this._fallback()[name](...args);
-        }
-      }
-      _get(name) {
-        try {
-          return this._impl()[name];
-        } catch {
-          return this._fallback()[name];
-        }
-      }
-    };
-  }
-  _Scanner_instances = new WeakSet();
+  _ShimScanner_instances = new WeakSet();
   collect_fn = function() {
     const files = /* @__PURE__ */ new Set();
     const excluded = /* @__PURE__ */ new Set();
@@ -29668,6 +29610,71 @@ ${t.join(`
       candidates.add(tok);
     }
   };
+  var Scanner = wrapScanner(
+    typeof globalThis.__tw_oxide_scanner === "function" ? globalThis.__tw_oxide_scanner : null,
+    ShimScanner
+  );
+  function wrapScanner(Official, Shim) {
+    var _Scanner_instances, impl_fn, fallback_fn, call_fn, get_fn, _a7;
+    if (!Official) {
+      return Shim;
+    }
+    return _a7 = class {
+      constructor(opts = {}) {
+        __privateAdd(this, _Scanner_instances);
+        this._opts = opts;
+        this._shim = null;
+        try {
+          this._native = new Official(opts);
+        } catch (e3) {
+          this._native = null;
+          this._shim = new Shim(opts);
+        }
+      }
+      scan() {
+        return __privateMethod(this, _Scanner_instances, call_fn).call(this, "scan", []);
+      }
+      scanFiles(input) {
+        return __privateMethod(this, _Scanner_instances, call_fn).call(this, "scanFiles", [input]);
+      }
+      getCandidatesWithPositions(input) {
+        return __privateMethod(this, _Scanner_instances, call_fn).call(this, "getCandidatesWithPositions", [input]);
+      }
+      get files() {
+        return __privateMethod(this, _Scanner_instances, get_fn).call(this, "files");
+      }
+      get scannedFiles() {
+        return __privateMethod(this, _Scanner_instances, get_fn).call(this, "scannedFiles");
+      }
+      get globs() {
+        return __privateMethod(this, _Scanner_instances, get_fn).call(this, "globs");
+      }
+      get normalizedSources() {
+        return __privateMethod(this, _Scanner_instances, get_fn).call(this, "normalizedSources");
+      }
+    }, _Scanner_instances = new WeakSet(), impl_fn = function() {
+      return this._shim || this._native;
+    }, fallback_fn = function() {
+      if (!this._shim) {
+        this._shim = new Shim(this._opts);
+      }
+      return this._shim;
+    }, call_fn = function(name, args) {
+      const cur = __privateMethod(this, _Scanner_instances, impl_fn).call(this);
+      try {
+        return cur[name](...args);
+      } catch (e3) {
+        return __privateMethod(this, _Scanner_instances, fallback_fn).call(this)[name](...args);
+      }
+    }, get_fn = function(name) {
+      const cur = __privateMethod(this, _Scanner_instances, impl_fn).call(this);
+      try {
+        return cur[name];
+      } catch (e3) {
+        return __privateMethod(this, _Scanner_instances, fallback_fn).call(this)[name];
+      }
+    }, _a7;
+  }
   function readText(file) {
     return import_fs2.default.readFileSync(file, "utf8");
   }

@@ -1,8 +1,50 @@
 [tools]
 go = "1.27.0"
 node = "26.8.1"
+goreleaser = "2.17.0"
+svu = "3.3.0"
 
-[tasks]
-generate = "go generate ./..."
-build = "go build -o bin/tailwind ./cmd/tailwind"
-test = "go test ./..."
+[tasks.install]
+run = "npm ci"
+
+[tasks.generate]
+description = "Bundle official CLI and copy WASM for go:embed"
+run = "go generate ./..."
+
+[tasks.build]
+description = "Build tailwind binary"
+depends = ["generate"]
+run = "go build -o bin/tailwind ./cmd/tailwind"
+
+[tasks.test]
+description = "go test"
+depends = ["generate"]
+run = "go test ./..."
+
+[tasks."check:goreleaser"]
+run = "goreleaser check"
+
+[tasks.ci]
+description = "CI checks"
+depends = ["test", "build", "check:goreleaser"]
+
+[tasks.release]
+description = "Tag and ship binaries with GoReleaser (svu + goreleaser)"
+depends = ["ci"]
+usage = '''
+arg "<version>" help="New version" {
+  choices "next" "major" "minor" "patch"
+  default "next"
+}
+'''
+run = '''
+TAG="$(svu ${usage_version})"
+echo "Releasing tag: $TAG (svu current=$(svu current 2>/dev/null || echo none))"
+if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+  echo "Tag $TAG already exists" >&2
+  exit 1
+fi
+git tag "$TAG"
+git push origin "refs/tags/$TAG"
+goreleaser release --clean
+'''

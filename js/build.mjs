@@ -1,7 +1,11 @@
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import * as esbuild from "esbuild";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+
+const execFileP = promisify(execFile);
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -55,15 +59,7 @@ await fs.copyFile(
   path.join(root, "node_modules/lightningcss-wasm/lightningcss_node.wasm"),
   path.join(wasmDir, "lightningcss.wasm"),
 );
-const oxideSrc = path.join(
-  root,
-  "node_modules/@tailwindcss/oxide-wasm32-wasi/tailwindcss-oxide.wasm32-wasi.wasm",
-);
-try {
-  await fs.copyFile(oxideSrc, path.join(wasmDir, "oxide.wasm"));
-} catch {
-  // optional until npm can store the wasm32 package
-}
+await copyOxideWasm(wasmDir);
 
 const out = path.join(root, "internal/engine/bundle.js");
 let js = await fs.readFile(out, "utf8");
@@ -83,3 +79,39 @@ js = js.replace(
   "var toPath = function (maybeURL) { try { return fileURLToPath(maybeURL); } catch (e) { return maybeURL; } };",
 );
 await fs.writeFile(out, js);
+
+async function copyOxideWasm(wasmDir) {
+  const dest = path.join(wasmDir, "oxide.wasm");
+  const local = path.join(
+    root,
+    "node_modules/@tailwindcss/oxide-wasm32-wasi/tailwindcss-oxide.wasm32-wasi.wasm",
+  );
+  try {
+    await fs.copyFile(local, dest);
+    return;
+  } catch {
+    // npm refuses cpu wasm32 on the host; pull the tarball
+  }
+  const { version } = JSON.parse(
+    await fs.readFile(path.join(root, "node_modules/tailwindcss/package.json"), "utf8"),
+  );
+  const url = `https://registry.npmjs.org/@tailwindcss/oxide-wasm32-wasi/-/oxide-wasm32-wasi-${version}.tgz`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`download oxide wasm: ${res.status} ${url}`);
+  }
+  const tgz = path.join(wasmDir, ".oxide.tgz");
+  const unpack = path.join(wasmDir, ".oxide-pkg");
+  await fs.writeFile(tgz, Buffer.from(await res.arrayBuffer()));
+  await fs.mkdir(unpack, { recursive: true });
+  try {
+    await execFileP("tar", ["-xzf", tgz, "-C", unpack, "--strip-components=1"]);
+    await fs.copyFile(
+      path.join(unpack, "tailwindcss-oxide.wasm32-wasi.wasm"),
+      dest,
+    );
+  } finally {
+    await fs.rm(tgz, { force: true });
+    await fs.rm(unpack, { recursive: true, force: true });
+  }
+}

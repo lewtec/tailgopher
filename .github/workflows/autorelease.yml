@@ -1,0 +1,56 @@
+name: Autorelease
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      new_version:
+        description: "New tag version"
+        type: choice
+        default: "patch"
+        options:
+          - next
+          - patch
+          - minor
+          - major
+
+jobs:
+  autorelease:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Setup git config
+        run: |
+          git config user.name actions-bot
+          git config user.email actions-bot@users.noreply.github.com
+
+      - uses: jdx/mise-action@5228313ee0372e111a38da051671ca30fc5a96db # v3
+
+      - name: Install
+        run: mise run install
+
+      - name: CI
+        run: mise run ci
+
+      - name: Make release if everything looks right
+        if: github.event_name != 'pull_request'
+        env:
+          NEW_VERSION: ${{ github.event.inputs.new_version || 'next' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "Existing tags (top):"
+          git tag --sort=-v:refname | head -10 || true
+          echo "svu current=$(svu current 2>/dev/null || true) next=$(svu next) minor=$(svu minor) patch=$(svu patch)"
+          mise run release -- "$NEW_VERSION"
