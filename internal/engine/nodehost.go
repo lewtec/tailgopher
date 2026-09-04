@@ -452,7 +452,7 @@ func attachProcess(vm *goja.Runtime, args []string) error {
 			_, _ = fmt.Fprint(os.Stdout, s)
 			return true
 		},
-		"isTTY": isatty(os.Stdout),
+		"isTTY":   isatty(os.Stdout),
 		"columns": 80,
 	})
 	proc.Set("stderr", map[string]any{
@@ -464,9 +464,9 @@ func attachProcess(vm *goja.Runtime, args []string) error {
 		"columns": 80,
 	})
 	proc.Set("stdin", map[string]any{
-		"on":       func(goja.FunctionCall) goja.Value { return goja.Undefined() },
-		"resume":   func(goja.FunctionCall) goja.Value { return goja.Undefined() },
-		"isTTY":    false,
+		"on":     func(goja.FunctionCall) goja.Value { return goja.Undefined() },
+		"resume": func(goja.FunctionCall) goja.Value { return goja.Undefined() },
+		"isTTY":  false,
 	})
 	proc.Set("hrtime", hrtime(vm))
 	proc.Set("versions", map[string]any{"node": "22.0.0"})

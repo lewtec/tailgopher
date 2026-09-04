@@ -27,7 +27,7 @@ export const Features = {
 
 export function transform(opts = {}) {
   if (typeof globalThis.__tw_lightning === "function") {
-    return globalThis.__tw_lightning(opts);
+    return normalizeLightning(globalThis.__tw_lightning(opts));
   }
   const input = opts.code;
   let css = typeof input === "string" ? input : bytesToString(input);
@@ -43,6 +43,27 @@ export function transform(opts = {}) {
     map: undefined,
     warnings: [],
   };
+}
+
+function normalizeLightning(r) {
+  if (!r || typeof r !== "object") {
+    return r;
+  }
+  const src = r.warnings;
+  const out = [];
+  const n = src && src.length != null ? Number(src.length) : 0;
+  for (let i = 0; i < n; i++) {
+    const w = src[i];
+    if (!w || typeof w !== "object") {
+      continue;
+    }
+    if (w.loc == null || typeof w.loc.line !== "number") {
+      w.loc = { line: 1, column: 1 };
+    }
+    out.push(w);
+  }
+  r.warnings = out;
+  return r;
 }
 
 function bytesToString(code) {

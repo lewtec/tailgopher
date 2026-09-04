@@ -5,8 +5,10 @@ import (
 	"crypto/rand"
 	"fmt"
 	"sync"
+	"sync/atomic"
 
 	"github.com/dop251/goja"
+	"github.com/dop251/goja_nodejs/buffer"
 	"github.com/tetratelabs/wazero"
 	"github.com/tetratelabs/wazero/api"
 	"github.com/tetratelabs/wazero/experimental/table"
@@ -30,16 +32,43 @@ const (
 
 // Env is a Node-API environment backed by goja values and wazero memory.
 type Env struct {
-	vm      *goja.Runtime
-	mod     api.Module
-	mem     api.Memory
-	scopes  [][]goja.Value
-	refs    map[uint32]ref
-	nextRef uint32
-	wraps   sync.Map // *goja.Object -> uint64
-	pending goja.Value
-	except  bool
-	cb      *cbInfo
+	vm           *goja.Runtime
+	mod          api.Module
+	mem          api.Memory
+	scopes       [][]goja.Value
+	refs         map[uint32]ref
+	nextRef      uint32
+	wraps        sync.Map // *goja.Object -> uint64
+	pending      goja.Value
+	except       bool
+	cb           *cbInfo
+	bufs         []mappedBuf
+	instanceData uint32
+	nextTid      atomic.Int32
+}
+
+func (e *Env) spawnThread(startArg int32) int32 {
+	id := e.nextTid.Add(1)
+	if id == 0 {
+		id = e.nextTid.Add(1)
+	}
+	go func() {
+		defer func() { _ = recover() }()
+		if e.mod == nil {
+			return
+		}
+		fn := e.mod.ExportedFunction("wasi_thread_start")
+		if fn == nil {
+			return
+		}
+		_, _ = fn.Call(context.Background(), uint64(id), uint64(startArg))
+	}()
+	return id
+}
+
+type mappedBuf struct {
+	ptr  uint32
+	dest []byte
 }
 
 type ref struct {
@@ -76,9 +105,86 @@ func (e *Env) pushScope() {
 }
 
 func (e *Env) popScope() {
+	e.syncBufs()
 	if len(e.scopes) > 1 {
 		e.scopes = e.scopes[:len(e.scopes)-1]
 	}
+}
+
+func (e *Env) syncBufs() {
+	if e.mem == nil {
+		return
+	}
+	for _, b := range e.bufs {
+		if b.ptr == 0 || len(b.dest) == 0 {
+			continue
+		}
+		if raw, ok := e.mem.Read(b.ptr, uint32(len(b.dest))); ok {
+			copy(b.dest, raw)
+		}
+	}
+}
+
+func (e *Env) malloc(n uint32) uint32 {
+	if e.mod == nil || n == 0 {
+		return 0
+	}
+	fn := e.mod.ExportedFunction("napi_wasm_malloc")
+	if fn == nil {
+		fn = e.mod.ExportedFunction("malloc")
+	}
+	if fn == nil {
+		return 0
+	}
+	res, err := fn.Call(context.Background(), uint64(n))
+	if err != nil || len(res) == 0 {
+		return 0
+	}
+	return uint32(res[0])
+}
+
+func (e *Env) pinBytes(b []byte) uint32 {
+	if len(b) == 0 {
+		return 0
+	}
+	ptr := e.malloc(uint32(len(b)))
+	if ptr == 0 {
+		return 0
+	}
+	_ = e.mem.Write(ptr, b)
+	e.bufs = append(e.bufs, mappedBuf{ptr: ptr, dest: b})
+	return ptr
+}
+
+func (e *Env) newBuffer(n, ptr uint32) goja.Value {
+	dest := make([]byte, n)
+	if ptr != 0 && e.mem != nil {
+		if raw, ok := e.mem.Read(ptr, n); ok {
+			copy(dest, raw)
+		}
+	}
+	if ptr != 0 {
+		e.bufs = append(e.bufs, mappedBuf{ptr: ptr, dest: dest})
+	}
+	if buf := wrapBytes(e.vm, dest); buf != nil {
+		return buf
+	}
+	o := e.vm.NewObject()
+	_ = o.Set("length", int64(n))
+	_ = o.Set("toString", func() string {
+		e.syncBufs()
+		return string(dest)
+	})
+	return o
+}
+
+func wrapBytes(vm *goja.Runtime, dest []byte) (out *goja.Object) {
+	defer func() {
+		if recover() != nil {
+			out = nil
+		}
+	}()
+	return buffer.WrapBytes(vm, dest)
 }
 
 func (e *Env) cur() []goja.Value { return e.scopes[len(e.scopes)-1] }
@@ -189,31 +295,44 @@ func (e *Env) callTable(idx uint32, envID, info uint32) (uint32, error) {
 	return uint32(res[0]), nil
 }
 
+func (e *Env) invoke(tableIdx, data uint32, this goja.Value, args []goja.Value) goja.Value {
+	e.pushScope()
+	defer e.popScope()
+	e.cb = &cbInfo{this: this, args: append([]goja.Value{}, args...), data: data}
+	info := e.push(e.vm.ToValue("cbinfo"))
+	ret, err := e.callTable(tableIdx, 0, info)
+	if err != nil {
+		panic(e.vm.ToValue(err.Error()))
+	}
+	if e.except {
+		ex := e.pending
+		e.except = false
+		e.pending = nil
+		panic(ex)
+	}
+	return e.get(ret)
+}
+
 func (e *Env) makeJSFunc(tableIdx, data uint32) func(goja.FunctionCall) goja.Value {
 	return func(call goja.FunctionCall) goja.Value {
-		e.pushScope()
-		defer e.popScope()
-		infoIdx := e.push(e.vm.ToValue(0)) // placeholder
-		e.cb = &cbInfo{this: call.This, args: call.Arguments, data: data}
-		_ = infoIdx
-		info := e.push(e.vm.ToValue("cbinfo"))
-		e.cb = &cbInfo{this: call.This, args: append([]goja.Value{}, call.Arguments...), data: data}
-		ret, err := e.callTable(tableIdx, 0, info)
-		if err != nil {
-			panic(e.vm.ToValue(err.Error()))
-		}
-		if e.except {
-			ex := e.pending
-			e.except = false
-			e.pending = nil
-			panic(ex)
-		}
-		return e.get(ret)
+		return e.invoke(tableIdx, data, call.This, call.Arguments)
 	}
 }
 
-func attachNapi(r wazero.Runtime, e *Env) error {
-	b := r.NewHostModuleBuilder("env")
+func (e *Env) makeJSCtor(tableIdx, data uint32) func(goja.ConstructorCall) *goja.Object {
+	return func(call goja.ConstructorCall) *goja.Object {
+		ret := e.invoke(tableIdx, data, call.This, call.Arguments)
+		if ret != nil && !goja.IsUndefined(ret) && !goja.IsNull(ret) {
+			if obj := ret.ToObject(e.vm); obj != nil {
+				return obj
+			}
+		}
+		return call.This
+	}
+}
+
+func attachNapi(r wazero.Runtime, e *Env, moduleName string) error {
+	b := r.NewHostModuleBuilder(moduleName)
 	exp := func(name string, fn interface{}) {
 		b.NewFunctionBuilder().WithFunc(fn).Export(name)
 	}
@@ -437,20 +556,11 @@ func attachNapi(r wazero.Runtime, e *Env) error {
 	})
 	exp("napi_get_typedarray_info", func(_ context.Context, m api.Module, _env uint32, typedarray, typePtr, lengthPtr, dataPtr, arraybuffer, byteOffset uint32) uint32 {
 		e.mem = m.Memory()
+		e.mod = m
 		b := asBytes(e.get(typedarray))
+		ptr := e.pinBytes(b)
 		if dataPtr != 0 {
-			malloc := m.ExportedFunction("napi_wasm_malloc")
-			if malloc == nil {
-				malloc = m.ExportedFunction("malloc")
-			}
-			if malloc != nil {
-				res, err := malloc.Call(context.Background(), uint64(len(b)))
-				if err == nil && len(res) > 0 {
-					ptr := uint32(res[0])
-					_ = e.mem.Write(ptr, b)
-					e.setU32(dataPtr, ptr)
-				}
-			}
+			e.setU32(dataPtr, ptr)
 		}
 		if lengthPtr != 0 {
 			e.setU32(lengthPtr, uint32(len(b)))
@@ -458,36 +568,128 @@ func attachNapi(r wazero.Runtime, e *Env) error {
 		if typePtr != 0 {
 			e.setU32(typePtr, 1) // uint8
 		}
+		if byteOffset != 0 {
+			e.setU32(byteOffset, 0)
+		}
+		if arraybuffer != 0 {
+			e.create(e.get(typedarray), arraybuffer)
+		}
 		return napiOK
 	})
 	exp("napi_create_buffer", func(_ context.Context, m api.Module, _env uint32, size, dataPtr, result uint32) uint32 {
 		e.mem = m.Memory()
-		buf := make([]byte, size)
+		e.mod = m
+		ptr := e.malloc(size)
 		if dataPtr != 0 {
-			malloc := m.ExportedFunction("napi_wasm_malloc")
-			if malloc == nil {
-				malloc = m.ExportedFunction("malloc")
-			}
-			if malloc != nil {
-				res, err := malloc.Call(context.Background(), uint64(size))
-				if err == nil && len(res) > 0 {
-					ptr := uint32(res[0])
-					e.setU32(dataPtr, ptr)
-				}
-			}
+			e.setU32(dataPtr, ptr)
 		}
-		return e.create(e.vm.ToValue(buf), result)
+		return e.create(e.newBuffer(size, ptr), result)
 	})
 	exp("napi_create_buffer_copy", func(_ context.Context, m api.Module, _env uint32, size, data, resultData, result uint32) uint32 {
 		e.mem = m.Memory()
-		raw, _ := e.mem.Read(data, size)
-		cp := append([]byte(nil), raw...)
-		return e.create(e.vm.ToValue(cp), result)
+		e.mod = m
+		ptr := e.malloc(size)
+		if raw, ok := e.mem.Read(data, size); ok && ptr != 0 {
+			_ = e.mem.Write(ptr, raw)
+		}
+		if resultData != 0 {
+			e.setU32(resultData, ptr)
+		}
+		return e.create(e.newBuffer(size, ptr), result)
 	})
 	exp("napi_create_external_buffer", func(_ context.Context, m api.Module, _env uint32, size, data, finalize, hint, result uint32) uint32 {
 		e.mem = m.Memory()
-		raw, _ := e.mem.Read(data, size)
-		return e.create(e.vm.ToValue(append([]byte(nil), raw...)), result)
+		e.mod = m
+		return e.create(e.newBuffer(size, data), result)
+	})
+	exp("napi_is_buffer", func(_ context.Context, m api.Module, _env uint32, value, result uint32) uint32 {
+		e.mem = m.Memory()
+		v := 0
+		if isTyped(e.get(value)) {
+			v = 1
+		}
+		_ = e.mem.WriteByte(result, byte(v))
+		return napiOK
+	})
+	exp("napi_get_buffer_info", func(_ context.Context, m api.Module, _env uint32, value, dataPtr, lengthPtr uint32) uint32 {
+		e.mem = m.Memory()
+		e.mod = m
+		b := asBytes(e.get(value))
+		if dataPtr != 0 {
+			e.setU32(dataPtr, e.pinBytes(b))
+		}
+		if lengthPtr != 0 {
+			e.setU32(lengthPtr, uint32(len(b)))
+		}
+		return napiOK
+	})
+	exp("napi_get_value_int32", func(_ context.Context, m api.Module, _env uint32, value, result uint32) uint32 {
+		e.mem = m.Memory()
+		return e.setI32(result, int32(e.get(value).ToInteger()))
+	})
+	exp("napi_get_value_uint32", func(_ context.Context, m api.Module, _env uint32, value, result uint32) uint32 {
+		e.mem = m.Memory()
+		return e.setU32(result, uint32(e.get(value).ToInteger()))
+	})
+	exp("napi_get_value_int64", func(_ context.Context, m api.Module, _env uint32, value, result uint32) uint32 {
+		e.mem = m.Memory()
+		if result != 0 {
+			_ = e.mem.WriteUint64Le(result, uint64(e.get(value).ToInteger()))
+		}
+		return napiOK
+	})
+	exp("napi_create_array", func(_ context.Context, m api.Module, _env uint32, result uint32) uint32 {
+		e.mem = m.Memory()
+		return e.create(e.vm.NewArray(), result)
+	})
+	exp("napi_open_handle_scope", func(_ context.Context, m api.Module, _env uint32, result uint32) uint32 {
+		e.mem = m.Memory()
+		e.pushScope()
+		return e.setU32(result, uint32(len(e.scopes)-1))
+	})
+	exp("napi_close_handle_scope", func(_ context.Context, m api.Module, _env, scope uint32) uint32 {
+		e.popScope()
+		return napiOK
+	})
+	exp("napi_open_escapable_handle_scope", func(_ context.Context, m api.Module, _env uint32, result uint32) uint32 {
+		e.mem = m.Memory()
+		e.pushScope()
+		return e.setU32(result, uint32(len(e.scopes)-1))
+	})
+	exp("napi_close_escapable_handle_scope", func(_ context.Context, m api.Module, _env, scope uint32) uint32 {
+		e.popScope()
+		return napiOK
+	})
+	exp("napi_escape_handle", func(_ context.Context, m api.Module, _env, scope, escapee, result uint32) uint32 {
+		e.mem = m.Memory()
+		v := e.get(escapee)
+		if len(e.scopes) < 2 {
+			return e.create(v, result)
+		}
+		outer := e.scopes[len(e.scopes)-2]
+		id := uint32(len(outer))
+		e.scopes[len(e.scopes)-2] = append(outer, v)
+		return e.setU32(result, id)
+	})
+	exp("napi_set_instance_data", func(_ context.Context, m api.Module, _env, data, finalize, hint uint32) uint32 {
+		e.instanceData = data
+		return napiOK
+	})
+	exp("napi_get_instance_data", func(_ context.Context, m api.Module, _env, result uint32) uint32 {
+		e.mem = m.Memory()
+		return e.setU32(result, e.instanceData)
+	})
+	exp("napi_has_property", func(_ context.Context, m api.Module, _env uint32, object, key, result uint32) uint32 {
+		e.mem = m.Memory()
+		obj := e.get(object).ToObject(e.vm)
+		name := e.get(key).String()
+		has := obj != nil && obj.Get(name) != nil && !goja.IsUndefined(obj.Get(name))
+		if has {
+			_ = e.mem.WriteByte(result, 1)
+		} else {
+			_ = e.mem.WriteByte(result, 0)
+		}
+		return napiOK
 	})
 	exp("napi_create_reference", func(_ context.Context, m api.Module, _env uint32, value, refcount, result uint32) uint32 {
 		e.mem = m.Memory()
@@ -530,7 +732,34 @@ func attachNapi(r wazero.Runtime, e *Env) error {
 	exp("napi_define_class", func(_ context.Context, m api.Module, _env uint32, namePtr, length, ctor, data, propCount, props, result uint32) uint32 {
 		e.mem = m.Memory()
 		e.mod = m
-		fn := e.vm.ToValue(e.makeJSFunc(ctor, data))
+		fn := e.vm.ToValue(e.makeJSCtor(ctor, data))
+		obj := fn.ToObject(e.vm)
+		proto := e.vm.NewObject()
+		if obj != nil {
+			_ = obj.Set("prototype", proto)
+		}
+		const napiStatic = 1 << 10
+		for i := uint32(0); i < propCount; i++ {
+			base := props + i*32
+			utf8 := e.readU32(base)
+			nameVal := e.readU32(base + 4)
+			method := e.readU32(base + 8)
+			attrs := e.readU32(base + 24)
+			name := ""
+			if utf8 != 0 {
+				name = e.readString(utf8, ^uint32(0))
+			} else {
+				name = e.get(nameVal).String()
+			}
+			if method == 0 {
+				continue
+			}
+			target := proto
+			if attrs&napiStatic != 0 && obj != nil {
+				target = obj
+			}
+			_ = target.Set(name, e.vm.ToValue(e.makeJSFunc(method, e.readU32(base+28))))
+		}
 		return e.create(fn, result)
 	})
 	exp("napi_define_properties", func(_ context.Context, m api.Module, _env uint32, object, count, props uint32) uint32 {
@@ -629,6 +858,16 @@ func attachNapi(r wazero.Runtime, e *Env) error {
 	})
 	exp("napi_get_prototype", func(_ context.Context, m api.Module, _env uint32, object, result uint32) uint32 {
 		e.mem = m.Memory()
+		obj := e.get(object).ToObject(e.vm)
+		if obj == nil {
+			return e.create(goja.Null(), result)
+		}
+		if proto := obj.Get("prototype"); proto != nil && !goja.IsUndefined(proto) && !goja.IsNull(proto) {
+			return e.create(proto, result)
+		}
+		if proto := obj.Prototype(); proto != nil {
+			return e.create(proto, result)
+		}
 		return e.create(goja.Null(), result)
 	})
 	exp("napi_strict_equals", func(_ context.Context, m api.Module, _env uint32, lhs, rhs, result uint32) uint32 {
@@ -706,10 +945,25 @@ func attachNapi(r wazero.Runtime, e *Env) error {
 		e.mem = m.Memory()
 		return e.create(e.vm.ToValue(e.get(msg).String()), result)
 	})
-	exp("napi_create_threadsafe_function", func(_ context.Context, m api.Module, _a, _b, _c, _d, _e, _f, _g, _h, _i uint32) uint32 {
+	exp("napi_create_threadsafe_function", func(_ context.Context, m api.Module, _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k uint32) uint32 {
 		return napiOK
 	})
-	exp("napi_unref_threadsafe_function", func(_ context.Context, m api.Module, _a uint32) uint32 {
+	exp("napi_unref_threadsafe_function", func(_ context.Context, m api.Module, _a, _b uint32) uint32 {
+		return napiOK
+	})
+	exp("napi_ref_threadsafe_function", func(_ context.Context, m api.Module, _a, _b uint32) uint32 {
+		return napiOK
+	})
+	exp("napi_acquire_threadsafe_function", func(_ context.Context, m api.Module, _a, _b uint32) uint32 {
+		return napiOK
+	})
+	exp("napi_release_threadsafe_function", func(_ context.Context, m api.Module, _a, _b, _c uint32) uint32 {
+		return napiOK
+	})
+	exp("napi_call_threadsafe_function", func(_ context.Context, m api.Module, _a, _b, _c uint32) uint32 {
+		return napiOK
+	})
+	exp("napi_get_threadsafe_function_context", func(_ context.Context, m api.Module, _a, _b uint32) uint32 {
 		return napiOK
 	})
 	exp("await_promise_sync", func(_ context.Context, m api.Module, _a, _b, _c uint32) {})
@@ -720,13 +974,13 @@ func attachNapi(r wazero.Runtime, e *Env) error {
 		_ = e.mem.Write(ptr, buf)
 		return 0
 	})
-	exp("_emnapi_worker_ref", func() {})
-	exp("_emnapi_runtime_keepalive_push", func() uint32 { return 0 })
+	exp("_emnapi_worker_ref", func(_ context.Context, m api.Module, _id uint32) {})
+	exp("_emnapi_runtime_keepalive_push", func() {})
 	exp("_emnapi_unwind", func() {})
 	exp("_emnapi_is_main_browser_thread", func() uint32 { return 0 })
 	exp("_emnapi_get_now", func() float64 { return 0 })
 	exp("_emnapi_is_main_runtime_thread", func() uint32 { return 1 })
-	exp("_emnapi_async_worker", func() {})
+	exp("_emnapi_async_worker", func(_ context.Context, m api.Module, _id uint32) uint32 { return 0 })
 
 	_, err := b.Instantiate(context.Background())
 	return err
@@ -738,16 +992,26 @@ func writeF64(mem api.Memory, ptr uint32, v float64) uint32 {
 	return napiOK
 }
 
-func isBool(v goja.Value) bool    { _, ok := v.Export().(bool); return ok }
-func isNumber(v goja.Value) bool  { _, ok := v.Export().(int64); if ok { return true }; _, ok = v.Export().(float64); return ok }
-func isString(v goja.Value) bool  { _, ok := v.Export().(string); return ok }
-func isSymbol(v goja.Value) bool  { return false }
-func isFunc(v goja.Value) bool    { _, ok := goja.AssertFunction(v); return ok }
-func isObject(v goja.Value) bool  { _, ok := v.(*goja.Object); return ok }
+func isBool(v goja.Value) bool { _, ok := v.Export().(bool); return ok }
+func isNumber(v goja.Value) bool {
+	_, ok := v.Export().(int64)
+	if ok {
+		return true
+	}
+	_, ok = v.Export().(float64)
+	return ok
+}
+func isString(v goja.Value) bool { _, ok := v.Export().(string); return ok }
+func isSymbol(v goja.Value) bool { return false }
+func isFunc(v goja.Value) bool   { _, ok := goja.AssertFunction(v); return ok }
+func isObject(v goja.Value) bool { _, ok := v.(*goja.Object); return ok }
 
 func isTyped(v goja.Value) bool {
+	if v == nil || goja.IsUndefined(v) || goja.IsNull(v) {
+		return false
+	}
 	switch v.Export().(type) {
-	case []byte:
+	case []byte, goja.ArrayBuffer:
 		return true
 	default:
 		return false
@@ -755,12 +1019,17 @@ func isTyped(v goja.Value) bool {
 }
 
 func asBytes(v goja.Value) []byte {
+	if v == nil || goja.IsUndefined(v) || goja.IsNull(v) {
+		return nil
+	}
 	switch t := v.Export().(type) {
 	case []byte:
 		return t
+	case goja.ArrayBuffer:
+		return t.Bytes()
 	case string:
 		return []byte(t)
 	default:
-		return []byte(fmt.Sprint(t))
+		return nil
 	}
 }

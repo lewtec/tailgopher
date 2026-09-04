@@ -3,7 +3,7 @@ import path from "path";
 
 const skipDir = new Set(["node_modules", ".git", "dist", "vendor"]);
 
-export class Scanner {
+class ShimScanner {
   constructor(opts = {}) {
     this.sources = opts.sources || [];
     this._files = [];
@@ -81,6 +81,77 @@ export class Scanner {
       candidates.add(tok);
     }
   }
+}
+
+export const Scanner = wrapScanner(
+  typeof globalThis.__tw_oxide_scanner === "function"
+    ? globalThis.__tw_oxide_scanner
+    : null,
+  ShimScanner,
+);
+
+function wrapScanner(Official, Shim) {
+  if (!Official) {
+    return Shim;
+  }
+  return class Scanner {
+    constructor(opts = {}) {
+      this._opts = opts;
+      this._shim = null;
+      try {
+        this._native = new Official(opts);
+      } catch {
+        this._native = null;
+        this._shim = new Shim(opts);
+      }
+    }
+    scan() {
+      return this.#call("scan", []);
+    }
+    scanFiles(input) {
+      return this.#call("scanFiles", [input]);
+    }
+    getCandidatesWithPositions(input) {
+      return this.#call("getCandidatesWithPositions", [input]);
+    }
+    get files() {
+      return this.#get("files");
+    }
+    get scannedFiles() {
+      return this.#get("scannedFiles");
+    }
+    get globs() {
+      return this.#get("globs");
+    }
+    get normalizedSources() {
+      return this.#get("normalizedSources");
+    }
+    #impl() {
+      return this._shim || this._native;
+    }
+    #fallback() {
+      if (!this._shim) {
+        this._shim = new Shim(this._opts);
+      }
+      return this._shim;
+    }
+    #call(name, args) {
+      const cur = this.#impl();
+      try {
+        return cur[name](...args);
+      } catch {
+        return this.#fallback()[name](...args);
+      }
+    }
+    #get(name) {
+      const cur = this.#impl();
+      try {
+        return cur[name];
+      } catch {
+        return this.#fallback()[name];
+      }
+    }
+  };
 }
 
 function readText(file) {

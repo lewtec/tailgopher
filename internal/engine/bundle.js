@@ -27389,7 +27389,7 @@ Did you specify these with the most recent transformation maps first?`
   };
   function transform(opts = {}) {
     if (typeof globalThis.__tw_lightning === "function") {
-      return globalThis.__tw_lightning(opts);
+      return normalizeLightning(globalThis.__tw_lightning(opts));
     }
     const input = opts.code;
     let css = typeof input === "string" ? input : bytesToString(input);
@@ -27405,6 +27405,26 @@ Did you specify these with the most recent transformation maps first?`
       map: void 0,
       warnings: []
     };
+  }
+  function normalizeLightning(r) {
+    if (!r || typeof r !== "object") {
+      return r;
+    }
+    const src = r.warnings;
+    const out = [];
+    const n = src && src.length != null ? Number(src.length) : 0;
+    for (let i = 0; i < n; i++) {
+      const w = src[i];
+      if (!w || typeof w !== "object") {
+        continue;
+      }
+      if (w.loc == null || typeof w.loc.line !== "number") {
+        w.loc = { line: 1, column: 1 };
+      }
+      out.push(w);
+    }
+    r.warnings = out;
+    return r;
   }
   function bytesToString(code) {
     if (code == null) {
@@ -29572,6 +29592,64 @@ ${t.join(`
       return this.sources.map((s) => ({ base: s.base, pattern: s.pattern }));
     }
   };
+  var ShimScanner = Scanner;
+  if (typeof globalThis.__tw_oxide_scanner === "function") {
+    const Official = globalThis.__tw_oxide_scanner;
+    Scanner = class {
+      constructor(opts = {}) {
+        this._opts = opts;
+        this._shim = null;
+        try {
+          this._native = new Official(opts);
+        } catch {
+          this._native = null;
+          this._shim = new ShimScanner(opts);
+        }
+      }
+      scan() {
+        return this._call("scan", []);
+      }
+      scanFiles(input) {
+        return this._call("scanFiles", [input]);
+      }
+      getCandidatesWithPositions(input) {
+        return this._call("getCandidatesWithPositions", [input]);
+      }
+      get files() {
+        return this._get("files");
+      }
+      get scannedFiles() {
+        return this._get("scannedFiles");
+      }
+      get globs() {
+        return this._get("globs");
+      }
+      get normalizedSources() {
+        return this._get("normalizedSources");
+      }
+      _impl() {
+        return this._shim || this._native;
+      }
+      _fallback() {
+        if (!this._shim) this._shim = new ShimScanner(this._opts);
+        return this._shim;
+      }
+      _call(name, args) {
+        try {
+          return this._impl()[name](...args);
+        } catch {
+          return this._fallback()[name](...args);
+        }
+      }
+      _get(name) {
+        try {
+          return this._impl()[name];
+        } catch {
+          return this._fallback()[name];
+        }
+      }
+    };
+  }
   _Scanner_instances = new WeakSet();
   collect_fn = function() {
     const files = /* @__PURE__ */ new Set();

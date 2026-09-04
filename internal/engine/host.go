@@ -30,13 +30,13 @@ func Run(args []string) error {
 			runErr = err
 			return
 		}
-		registerOfficialWASM(registry, vm)
 		registerNodeModules(registry)
 		registry.RegisterNativeModule(console.ModuleName, console.RequireWithPrinter(slogPrinter{}))
 		registry.Enable(vm)
 		vm.Set("console", require.Require(vm, console.ModuleName))
 		url.Enable(vm)
 		buffer.Enable(vm)
+		registerOfficialWASM(registry, vm)
 		patchURLModule(vm)
 		patchUtilModule(vm)
 		wrapRequire(vm)
