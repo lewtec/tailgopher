@@ -67,7 +67,6 @@ func TestOxideLoad(t *testing.T) {
 }
 
 func TestOxideScan(t *testing.T) {
-	t.Skip("official scan deadlocks on WASI threads/rayon atomic.wait")
 	wasm, err := os.ReadFile("../engine/wasm/oxide.wasm")
 	if err != nil {
 		t.Skip(err)

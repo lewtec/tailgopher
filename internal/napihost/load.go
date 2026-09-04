@@ -102,16 +102,19 @@ func LoadOxide(vm *goja.Runtime, oxideWASM []byte) (*goja.Object, error) {
 	if _, err := r.InstantiateModule(ctx, tramp, wazero.NewModuleConfig().WithName("env")); err != nil {
 		return nil, fmt.Errorf("oxide env module: %w", err)
 	}
-	cfg := wazero.NewModuleConfig().
-		WithName("oxide").
-		WithStdout(os.Stdout).
-		WithStderr(os.Stderr).
-		WithSysWalltime().
-		WithSysNanotime().
-		WithSysNanosleep().
-		WithEnv("RAYON_NUM_THREADS", "1").
-		WithFSConfig(wazero.NewFSConfig().WithDirMount("/", "/"))
-	mod, err := r.InstantiateModule(ctx, compiled, cfg)
+	newCfg := func() wazero.ModuleConfig {
+		return wazero.NewModuleConfig().
+			WithStdout(os.Stdout).
+			WithStderr(os.Stderr).
+			WithSysWalltime().
+			WithSysNanotime().
+			WithSysNanosleep().
+			WithFSConfig(wazero.NewFSConfig().WithDirMount("/", "/"))
+	}
+	e.rt = r
+	e.compiled = compiled
+	e.newCfg = newCfg
+	mod, err := r.InstantiateModule(ctx, compiled, newCfg().WithName("oxide"))
 	if err != nil {
 		return nil, err
 	}

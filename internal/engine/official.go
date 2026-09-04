@@ -72,9 +72,7 @@ func loadOxideMod(vm *goja.Runtime) (*goja.Object, error) {
 		return nil, err
 	}
 	if sc := mod.Get("Scanner"); sc != nil && !goja.IsUndefined(sc) {
-		// Instantiation and class export work. scan() waits on WASI
-		// threads/rayon (atomic.wait) and deadlocks the host, so the
-		// CLI keeps the JS scanner until that path is real.
+		_ = vm.Set("__tw_oxide_scanner", sc)
 		slog.Info("official oxide wasm ready")
 	} else {
 		slog.Warn("oxide wasm loaded without Scanner", "keys", mod.Keys())

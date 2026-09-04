@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"log/slog"
 	"sync"
 	"sync/atomic"
 
@@ -45,24 +46,47 @@ type Env struct {
 	bufs         []mappedBuf
 	instanceData uint32
 	nextTid      atomic.Int32
+	rt           wazero.Runtime
+	compiled     wazero.CompiledModule
+	newCfg       func() wazero.ModuleConfig
+	spawnMu      sync.Mutex
 }
 
 func (e *Env) spawnThread(startArg int32) int32 {
+	if e.rt == nil || e.compiled == nil || e.newCfg == nil {
+		return -6
+	}
 	id := e.nextTid.Add(1)
-	if id == 0 {
+	if id <= 0 {
 		id = e.nextTid.Add(1)
 	}
+	started := make(chan error, 1)
 	go func() {
-		defer func() { _ = recover() }()
-		if e.mod == nil {
+		ctx := context.Background()
+		e.spawnMu.Lock()
+		inst, err := e.rt.InstantiateModule(ctx, e.compiled, e.newCfg().
+			WithName(fmt.Sprintf("oxide-t-%d", id)).
+			WithStartFunctions())
+		e.spawnMu.Unlock()
+		if err != nil {
+			started <- err
 			return
 		}
-		fn := e.mod.ExportedFunction("wasi_thread_start")
+		defer inst.Close(ctx)
+		started <- nil
+		fn := inst.ExportedFunction("wasi_thread_start")
 		if fn == nil {
+			slog.Error("oxide thread missing wasi_thread_start", "tid", id)
 			return
 		}
-		_, _ = fn.Call(context.Background(), uint64(id), uint64(startArg))
+		if _, err := fn.Call(ctx, uint64(id), uint64(startArg)); err != nil {
+			slog.Error("oxide wasi_thread_start", "tid", id, "err", err)
+		}
 	}()
+	if err := <-started; err != nil {
+		slog.Error("oxide thread instantiate", "tid", id, "err", err)
+		return -6
+	}
 	return id
 }
 
