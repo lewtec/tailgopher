@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/buffer"
@@ -11,9 +12,15 @@ import (
 	"github.com/dop251/goja_nodejs/url"
 )
 
+type slogPrinter struct{}
+
+func (slogPrinter) Log(msg string)   { slog.Info(msg) }
+func (slogPrinter) Warn(msg string)  { slog.Warn(msg) }
+func (slogPrinter) Error(msg string) { slog.Error(msg) }
+
 // Run executes official @tailwindcss/cli with the given argv.
 func Run(args []string) error {
-	loop := eventloop.NewEventLoop(eventloop.EnableConsole(true))
+	loop := eventloop.NewEventLoop(eventloop.EnableConsole(false))
 	var runErr error
 	loop.Run(func(vm *goja.Runtime) {
 		registry := require.NewRegistry(require.WithLoader(func(string) ([]byte, error) {
@@ -24,12 +31,15 @@ func Run(args []string) error {
 			return
 		}
 		registerNodeModules(registry)
+		registry.RegisterNativeModule(console.ModuleName, console.RequireWithPrinter(slogPrinter{}))
 		registry.Enable(vm)
-		console.Enable(vm)
+		vm.Set("console", require.Require(vm, console.ModuleName))
 		url.Enable(vm)
 		buffer.Enable(vm)
 		patchURLModule(vm)
+		patchUtilModule(vm)
 		wrapRequire(vm)
+		attachWebGlobals(vm)
 		if _, err := vm.RunString(Bundle); err != nil {
 			runErr = fmt.Errorf("cli: %w", err)
 			return

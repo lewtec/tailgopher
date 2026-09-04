@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"encoding/base64"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
+	goutil "github.com/dop251/goja_nodejs/util"
 )
 
 func registerNodeModules(reg *require.Registry) {
@@ -23,7 +25,7 @@ func registerNodeModules(reg *require.Registry) {
 	reg.RegisterNativeModule("node:module", loadModule)
 	reg.RegisterNativeModule("url", loadURL)
 	reg.RegisterNativeModule("node:url", loadURL)
-	reg.RegisterNativeModule("util", loadUtil)
+	reg.RegisterNativeModule("util", goutil.Require)
 	reg.RegisterNativeModule("node:util", loadUtil)
 	reg.RegisterNativeModule("readline", loadReadline)
 	reg.RegisterNativeModule("node:readline", loadReadline)
@@ -62,15 +64,16 @@ func fillPath(vm *goja.Runtime, exp *goja.Object, sep rune) {
 	exp.Set("sep", sepStr)
 	exp.Set("delimiter", string(os.PathListSeparator))
 	exp.Set("resolve", func(call goja.FunctionCall) goja.Value {
-		parts := make([]string, len(call.Arguments))
-		for i, a := range call.Arguments {
-			parts[i] = a.String()
+		wd, _ := os.Getwd()
+		out := wd
+		for _, a := range call.Arguments {
+			p := a.String()
+			if filepath.IsAbs(p) {
+				out = filepath.Clean(p)
+				continue
+			}
+			out = filepath.Clean(filepath.Join(out, p))
 		}
-		if len(parts) == 0 {
-			wd, _ := os.Getwd()
-			return vm.ToValue(wd)
-		}
-		out := filepath.Clean(filepath.Join(parts...))
 		if sep == '/' {
 			out = filepath.ToSlash(out)
 		}
@@ -137,11 +140,58 @@ func loadFS(vm *goja.Runtime, module *goja.Object) {
 		}
 		return goja.Undefined()
 	})
+	exp.Set("readdirSync", func(call goja.FunctionCall) goja.Value {
+		p := call.Argument(0).String()
+		entries, err := os.ReadDir(p)
+		if err != nil {
+			panic(vm.ToValue(err.Error()))
+		}
+		withTypes := false
+		if len(call.Arguments) > 1 {
+			if obj := call.Argument(1).ToObject(vm); obj != nil {
+				if v := obj.Get("withFileTypes"); v != nil && v.ToBoolean() {
+					withTypes = true
+				}
+			}
+		}
+		if !withTypes {
+			names := make([]string, 0, len(entries))
+			for _, e := range entries {
+				names = append(names, e.Name())
+			}
+			return vm.ToValue(names)
+		}
+		arr := make([]any, 0, len(entries))
+		for _, e := range entries {
+			ent := e
+			arr = append(arr, map[string]any{
+				"name": ent.Name(),
+				"isDirectory": func() bool {
+					return ent.IsDir()
+				},
+				"isFile": func() bool {
+					return ent.Type().IsRegular() || (!ent.IsDir() && ent.Type()&os.ModeSymlink == 0)
+				},
+				"isSymbolicLink": func() bool {
+					return ent.Type()&os.ModeSymlink != 0
+				},
+			})
+		}
+		return vm.ToValue(arr)
+	})
 	exp.Set("statSync", func(p string) map[string]any {
-		return statMap(p, false)
+		m, err := statMap(p, false)
+		if err != nil {
+			panic(vm.ToValue(err.Error()))
+		}
+		return m
 	})
 	exp.Set("lstatSync", func(p string) map[string]any {
-		return statMap(p, true)
+		m, err := statMap(p, true)
+		if err != nil {
+			panic(vm.ToValue(err.Error()))
+		}
+		return m
 	})
 	exp.Set("realpathSync", func(p string) string {
 		r, err := filepath.EvalSymlinks(p)
@@ -184,12 +234,12 @@ func fsPromises(vm *goja.Runtime) *goja.Object {
 	})
 	o.Set("stat", func(p string) goja.Value {
 		return promiseOf(vm, func() (any, error) {
-			return statMap(p, false), nil
+			return statMap(p, false)
 		})
 	})
 	o.Set("lstat", func(p string) goja.Value {
 		return promiseOf(vm, func() (any, error) {
-			return statMap(p, true), nil
+			return statMap(p, true)
 		})
 	})
 	o.Set("realpath", func(p string) goja.Value {
@@ -200,7 +250,7 @@ func fsPromises(vm *goja.Runtime) *goja.Object {
 	return o
 }
 
-func statMap(p string, lstat bool) map[string]any {
+func statMap(p string, lstat bool) (map[string]any, error) {
 	var info os.FileInfo
 	var err error
 	if lstat {
@@ -209,7 +259,7 @@ func statMap(p string, lstat bool) map[string]any {
 		info, err = os.Stat(p)
 	}
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 	mode := info.Mode()
 	return map[string]any{
@@ -220,7 +270,7 @@ func statMap(p string, lstat bool) map[string]any {
 		"isFIFO":            func() bool { return mode&os.ModeNamedPipe != 0 },
 		"mtimeMs":           float64(info.ModTime().UnixMilli()),
 		"size":              info.Size(),
-	}
+	}, nil
 }
 
 func loadModule(vm *goja.Runtime, module *goja.Object) {
@@ -299,12 +349,25 @@ func patchURLExports(vm *goja.Runtime, exp *goja.Object) {
 }
 
 func loadUtil(vm *goja.Runtime, module *goja.Object) {
+	goutil.Require(vm, module)
 	exp := exports(vm, module)
 	exp.Set("stripVTControlCharacters", func(s string) string {
 		return s
 	})
 	exp.Set("promisify", func(fn goja.Value) goja.Value { return fn })
 	exp.Set("deprecate", func(fn goja.Value) goja.Value { return fn })
+}
+
+func patchUtilModule(vm *goja.Runtime) {
+	mod := require.Require(vm, "util")
+	if obj, ok := mod.(*goja.Object); ok && obj != nil {
+		_ = obj.Set("stripVTControlCharacters", func(s string) string { return s })
+		_ = obj.Set("deprecate", func(fn goja.Value) goja.Value { return fn })
+		_ = obj.Set("promisify", func(fn goja.Value) goja.Value { return fn })
+		_ = obj.Set("inherits", func(ctor, super goja.Value) {
+			// no-op for host
+		})
+	}
 }
 
 func loadReadline(vm *goja.Runtime, module *goja.Object) {
@@ -333,6 +396,19 @@ func promiseOf(vm *goja.Runtime, fn func() (any, error)) goja.Value {
 		_ = resolve(v)
 	}
 	return vm.ToValue(p)
+}
+
+func attachWebGlobals(vm *goja.Runtime) {
+	_ = vm.Set("atob", func(s string) string {
+		b, err := base64.StdEncoding.DecodeString(s)
+		if err != nil {
+			panic(vm.ToValue(err.Error()))
+		}
+		return string(b)
+	})
+	_ = vm.Set("btoa", func(s string) string {
+		return base64.StdEncoding.EncodeToString([]byte(s))
+	})
 }
 
 func attachProcess(vm *goja.Runtime, args []string) error {

@@ -1,3 +1,7 @@
+if (typeof globalThis.structuredClone !== "function") {
+  globalThis.structuredClone = (value) => JSON.parse(JSON.stringify(value));
+}
+
 import daisyui from "daisyui";
 import typography from "@tailwindcss/typography";
 import tailwindPkg from "tailwindcss/package.json";

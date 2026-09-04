@@ -2346,7 +2346,7 @@
             return false;
           }
         };
-        _proto.walk = function walk(callback) {
+        _proto.walk = function walk2(callback) {
           return this.each(function(node, i) {
             var result = callback(node, i);
             if (result !== false && node.length) {
@@ -5617,15 +5617,15 @@
     "node_modules/enhanced-resolve/lib/CachedInputFileSystem.js"(exports, module) {
       "use strict";
       var { nextTick } = __require("process");
-      var dirname = (path) => {
-        let idx = path.length - 1;
+      var dirname = (path2) => {
+        let idx = path2.length - 1;
         while (idx >= 0) {
-          const char = path.charCodeAt(idx);
+          const char = path2.charCodeAt(idx);
           if (char === 47 || char === 92) break;
           idx--;
         }
         if (idx < 0) return "";
-        return path.slice(0, idx);
+        return path2.slice(0, idx);
       };
       var runCallbacks = (callbacks, err, result) => {
         if (callbacks.length === 1) {
@@ -5737,13 +5737,13 @@
              * @param {FileSystemCallback<EXPECTED_ANY>=} callback callback
              * @returns {EXPECTED_ANY} result
              */
-            (path, options, callback) => {
+            (path2, options, callback) => {
               if (typeof options === "function") {
                 callback = /** @type {FileSystemCallback<EXPECTED_ANY>} */
                 options;
                 options = void 0;
               }
-              if (typeof path !== "string" && !Buffer.isBuffer(path) && !(path instanceof URL) && typeof path !== "number") {
+              if (typeof path2 !== "string" && !Buffer.isBuffer(path2) && !(path2 instanceof URL) && typeof path2 !== "number") {
                 callback(
                   new TypeError("path must be a string, Buffer, URL or number")
                 );
@@ -5754,26 +5754,26 @@
                   /** @type {EXPECTED_FUNCTION} */
                   this._provider.call(
                     this._providerContext,
-                    path,
+                    path2,
                     options,
                     callback
                   )
                 );
               }
-              let callbacks = this._activeAsyncOperations.get(path);
+              let callbacks = this._activeAsyncOperations.get(path2);
               if (callbacks) {
                 callbacks.push(callback);
                 return;
               }
-              this._activeAsyncOperations.set(path, callbacks = [callback]);
+              this._activeAsyncOperations.set(path2, callbacks = [callback]);
               provider(
-                path,
+                path2,
                 /**
                  * @param {Error} err error
                  * @param {EXPECTED_ANY} result result
                  */
                 (err, result) => {
-                  this._activeAsyncOperations.delete(path);
+                  this._activeAsyncOperations.delete(path2);
                   runCallbacks(callbacks, err, result);
                 }
               );
@@ -5786,11 +5786,11 @@
              * @param {object=} options options
              * @returns {EXPECTED_ANY} result
              */
-            (path, options) => (
+            (path2, options) => (
               /** @type {EXPECTED_FUNCTION} */
               this._syncProvider.call(
                 this._providerContext,
-                path,
+                path2,
                 options
               )
             )
@@ -5839,22 +5839,22 @@
          * @param {FileSystemCallback<EXPECTED_ANY>} callback callback
          * @returns {void}
          */
-        provide(path, options, callback) {
+        provide(path2, options, callback) {
           if (typeof options === "function") {
             callback = options;
             options = void 0;
           }
-          if (typeof path !== "string" && !Buffer.isBuffer(path) && !(path instanceof URL) && typeof path !== "number") {
+          if (typeof path2 !== "string" && !Buffer.isBuffer(path2) && !(path2 instanceof URL) && typeof path2 !== "number") {
             callback(new TypeError("path must be a string, Buffer, URL or number"));
             return;
           }
-          const strPath = typeof path !== "string" ? path.toString() : path;
+          const strPath = typeof path2 !== "string" ? path2.toString() : path2;
           if (options) {
             return (
               /** @type {EXPECTED_FUNCTION} */
               this._provider.call(
                 this._providerContext,
-                path,
+                path2,
                 options,
                 callback
               )
@@ -5878,7 +5878,7 @@
           this._activeAsyncOperations.set(strPath, callbacks = [callback]);
           this._provider.call(
             this._providerContext,
-            path,
+            path2,
             /**
              * @param {Error | null} err error
              * @param {EXPECTED_ANY=} result result
@@ -5901,17 +5901,17 @@
          * @param {EXPECTED_ANY} options options
          * @returns {EXPECTED_ANY} result
          */
-        provideSync(path, options) {
-          if (typeof path !== "string" && !Buffer.isBuffer(path) && !(path instanceof URL) && typeof path !== "number") {
+        provideSync(path2, options) {
+          if (typeof path2 !== "string" && !Buffer.isBuffer(path2) && !(path2 instanceof URL) && typeof path2 !== "number") {
             throw new TypeError("path must be a string");
           }
-          const strPath = typeof path !== "string" ? path.toString() : path;
+          const strPath = typeof path2 !== "string" ? path2.toString() : path2;
           if (options) {
             return (
               /** @type {EXPECTED_FUNCTION} */
               this._syncProvider.call(
                 this._providerContext,
-                path,
+                path2,
                 options
               )
             );
@@ -5931,7 +5931,7 @@
             result = /** @type {EXPECTED_FUNCTION} */
             this._syncProvider.call(
               this._providerContext,
-              path
+              path2
             );
           } catch (err) {
             this._storeResult(
@@ -6057,11 +6057,11 @@
          * @param {Error | null} err error
          * @param {EXPECTED_ANY} result result
          */
-        _storeResult(path, err, result) {
-          if (this._data.has(path)) return;
+        _storeResult(path2, err, result) {
+          if (this._data.has(path2)) return;
           const level = this._levels[this._currentLevel];
-          this._data.set(path, { err, result, level });
-          level.add(path);
+          this._data.set(path2, { err, result, level });
+          level.add(path2);
         }
         _decayLevel() {
           const nextLevel = (this._currentLevel + 1) % this._levels.length;
@@ -6200,8 +6200,8 @@
              * @param {string} path path
              * @param {FileSystemCallback<EXPECTED_ANY>} callback callback
              */
-            ((path, callback) => {
-              this.readFile(path, (err, buffer) => {
+            ((path2, callback) => {
+              this.readFile(path2, (err, buffer) => {
                 if (err) return callback(err);
                 if (!buffer || buffer.length === 0) {
                   return callback(new Error("No file content"));
@@ -6223,8 +6223,8 @@
              * @param {string} path path
              * @returns {EXPECTED_ANY} result
              */
-            ((path) => {
-              const buffer = this.readFileSync(path);
+            ((path2) => {
+              const buffer = this.readFileSync(path2);
               const data = JSON.parse(buffer.toString("utf8"));
               return data;
             }),
@@ -6308,54 +6308,54 @@
       }
       var chdir;
       module.exports = patch;
-      function patch(fs) {
+      function patch(fs2) {
         if (constants.hasOwnProperty("O_SYMLINK") && process.version.match(/^v0\.6\.[0-2]|^v0\.5\./)) {
-          patchLchmod(fs);
+          patchLchmod(fs2);
         }
-        if (!fs.lutimes) {
-          patchLutimes(fs);
+        if (!fs2.lutimes) {
+          patchLutimes(fs2);
         }
-        fs.chown = chownFix(fs.chown);
-        fs.fchown = chownFix(fs.fchown);
-        fs.lchown = chownFix(fs.lchown);
-        fs.chmod = chmodFix(fs.chmod);
-        fs.fchmod = chmodFix(fs.fchmod);
-        fs.lchmod = chmodFix(fs.lchmod);
-        fs.chownSync = chownFixSync(fs.chownSync);
-        fs.fchownSync = chownFixSync(fs.fchownSync);
-        fs.lchownSync = chownFixSync(fs.lchownSync);
-        fs.chmodSync = chmodFixSync(fs.chmodSync);
-        fs.fchmodSync = chmodFixSync(fs.fchmodSync);
-        fs.lchmodSync = chmodFixSync(fs.lchmodSync);
-        fs.stat = statFix(fs.stat);
-        fs.fstat = statFix(fs.fstat);
-        fs.lstat = statFix(fs.lstat);
-        fs.statSync = statFixSync(fs.statSync);
-        fs.fstatSync = statFixSync(fs.fstatSync);
-        fs.lstatSync = statFixSync(fs.lstatSync);
-        if (fs.chmod && !fs.lchmod) {
-          fs.lchmod = function(path, mode, cb) {
+        fs2.chown = chownFix(fs2.chown);
+        fs2.fchown = chownFix(fs2.fchown);
+        fs2.lchown = chownFix(fs2.lchown);
+        fs2.chmod = chmodFix(fs2.chmod);
+        fs2.fchmod = chmodFix(fs2.fchmod);
+        fs2.lchmod = chmodFix(fs2.lchmod);
+        fs2.chownSync = chownFixSync(fs2.chownSync);
+        fs2.fchownSync = chownFixSync(fs2.fchownSync);
+        fs2.lchownSync = chownFixSync(fs2.lchownSync);
+        fs2.chmodSync = chmodFixSync(fs2.chmodSync);
+        fs2.fchmodSync = chmodFixSync(fs2.fchmodSync);
+        fs2.lchmodSync = chmodFixSync(fs2.lchmodSync);
+        fs2.stat = statFix(fs2.stat);
+        fs2.fstat = statFix(fs2.fstat);
+        fs2.lstat = statFix(fs2.lstat);
+        fs2.statSync = statFixSync(fs2.statSync);
+        fs2.fstatSync = statFixSync(fs2.fstatSync);
+        fs2.lstatSync = statFixSync(fs2.lstatSync);
+        if (fs2.chmod && !fs2.lchmod) {
+          fs2.lchmod = function(path2, mode, cb) {
             if (cb) process.nextTick(cb);
           };
-          fs.lchmodSync = function() {
+          fs2.lchmodSync = function() {
           };
         }
-        if (fs.chown && !fs.lchown) {
-          fs.lchown = function(path, uid, gid, cb) {
+        if (fs2.chown && !fs2.lchown) {
+          fs2.lchown = function(path2, uid, gid, cb) {
             if (cb) process.nextTick(cb);
           };
-          fs.lchownSync = function() {
+          fs2.lchownSync = function() {
           };
         }
         if (platform === "win32") {
-          fs.rename = typeof fs.rename !== "function" ? fs.rename : (function(fs$rename) {
+          fs2.rename = typeof fs2.rename !== "function" ? fs2.rename : (function(fs$rename) {
             function rename(from, to, cb) {
               var start = Date.now();
               var backoff = 0;
               fs$rename(from, to, function CB(er3) {
                 if (er3 && (er3.code === "EACCES" || er3.code === "EPERM" || er3.code === "EBUSY") && Date.now() - start < 6e4) {
                   setTimeout(function() {
-                    fs.stat(to, function(stater, st2) {
+                    fs2.stat(to, function(stater, st2) {
                       if (stater && stater.code === "ENOENT")
                         fs$rename(from, to, CB);
                       else
@@ -6371,9 +6371,9 @@
             }
             if (Object.setPrototypeOf) Object.setPrototypeOf(rename, fs$rename);
             return rename;
-          })(fs.rename);
+          })(fs2.rename);
         }
-        fs.read = typeof fs.read !== "function" ? fs.read : (function(fs$read) {
+        fs2.read = typeof fs2.read !== "function" ? fs2.read : (function(fs$read) {
           function read(fd, buffer, offset, length, position, callback_) {
             var callback;
             if (callback_ && typeof callback_ === "function") {
@@ -6381,22 +6381,22 @@
               callback = function(er3, _3, __) {
                 if (er3 && er3.code === "EAGAIN" && eagCounter < 10) {
                   eagCounter++;
-                  return fs$read.call(fs, fd, buffer, offset, length, position, callback);
+                  return fs$read.call(fs2, fd, buffer, offset, length, position, callback);
                 }
                 callback_.apply(this, arguments);
               };
             }
-            return fs$read.call(fs, fd, buffer, offset, length, position, callback);
+            return fs$read.call(fs2, fd, buffer, offset, length, position, callback);
           }
           if (Object.setPrototypeOf) Object.setPrototypeOf(read, fs$read);
           return read;
-        })(fs.read);
-        fs.readSync = typeof fs.readSync !== "function" ? fs.readSync : /* @__PURE__ */ (function(fs$readSync) {
+        })(fs2.read);
+        fs2.readSync = typeof fs2.readSync !== "function" ? fs2.readSync : /* @__PURE__ */ (function(fs$readSync) {
           return function(fd, buffer, offset, length, position) {
             var eagCounter = 0;
             while (true) {
               try {
-                return fs$readSync.call(fs, fd, buffer, offset, length, position);
+                return fs$readSync.call(fs2, fd, buffer, offset, length, position);
               } catch (er3) {
                 if (er3.code === "EAGAIN" && eagCounter < 10) {
                   eagCounter++;
@@ -6406,11 +6406,11 @@
               }
             }
           };
-        })(fs.readSync);
-        function patchLchmod(fs2) {
-          fs2.lchmod = function(path, mode, callback) {
-            fs2.open(
-              path,
+        })(fs2.readSync);
+        function patchLchmod(fs3) {
+          fs3.lchmod = function(path2, mode, callback) {
+            fs3.open(
+              path2,
               constants.O_WRONLY | constants.O_SYMLINK,
               mode,
               function(err, fd) {
@@ -6418,80 +6418,80 @@
                   if (callback) callback(err);
                   return;
                 }
-                fs2.fchmod(fd, mode, function(err2) {
-                  fs2.close(fd, function(err22) {
+                fs3.fchmod(fd, mode, function(err2) {
+                  fs3.close(fd, function(err22) {
                     if (callback) callback(err2 || err22);
                   });
                 });
               }
             );
           };
-          fs2.lchmodSync = function(path, mode) {
-            var fd = fs2.openSync(path, constants.O_WRONLY | constants.O_SYMLINK, mode);
+          fs3.lchmodSync = function(path2, mode) {
+            var fd = fs3.openSync(path2, constants.O_WRONLY | constants.O_SYMLINK, mode);
             var threw = true;
             var ret;
             try {
-              ret = fs2.fchmodSync(fd, mode);
+              ret = fs3.fchmodSync(fd, mode);
               threw = false;
             } finally {
               if (threw) {
                 try {
-                  fs2.closeSync(fd);
+                  fs3.closeSync(fd);
                 } catch (er3) {
                 }
               } else {
-                fs2.closeSync(fd);
+                fs3.closeSync(fd);
               }
             }
             return ret;
           };
         }
-        function patchLutimes(fs2) {
-          if (constants.hasOwnProperty("O_SYMLINK") && fs2.futimes) {
-            fs2.lutimes = function(path, at4, mt4, cb) {
-              fs2.open(path, constants.O_SYMLINK, function(er3, fd) {
+        function patchLutimes(fs3) {
+          if (constants.hasOwnProperty("O_SYMLINK") && fs3.futimes) {
+            fs3.lutimes = function(path2, at4, mt4, cb) {
+              fs3.open(path2, constants.O_SYMLINK, function(er3, fd) {
                 if (er3) {
                   if (cb) cb(er3);
                   return;
                 }
-                fs2.futimes(fd, at4, mt4, function(er4) {
-                  fs2.close(fd, function(er22) {
+                fs3.futimes(fd, at4, mt4, function(er4) {
+                  fs3.close(fd, function(er22) {
                     if (cb) cb(er4 || er22);
                   });
                 });
               });
             };
-            fs2.lutimesSync = function(path, at4, mt4) {
-              var fd = fs2.openSync(path, constants.O_SYMLINK);
+            fs3.lutimesSync = function(path2, at4, mt4) {
+              var fd = fs3.openSync(path2, constants.O_SYMLINK);
               var ret;
               var threw = true;
               try {
-                ret = fs2.futimesSync(fd, at4, mt4);
+                ret = fs3.futimesSync(fd, at4, mt4);
                 threw = false;
               } finally {
                 if (threw) {
                   try {
-                    fs2.closeSync(fd);
+                    fs3.closeSync(fd);
                   } catch (er3) {
                   }
                 } else {
-                  fs2.closeSync(fd);
+                  fs3.closeSync(fd);
                 }
               }
               return ret;
             };
-          } else if (fs2.futimes) {
-            fs2.lutimes = function(_a7, _b, _c, cb) {
+          } else if (fs3.futimes) {
+            fs3.lutimes = function(_a7, _b, _c, cb) {
               if (cb) process.nextTick(cb);
             };
-            fs2.lutimesSync = function() {
+            fs3.lutimesSync = function() {
             };
           }
         }
         function chmodFix(orig) {
           if (!orig) return orig;
           return function(target, mode, cb) {
-            return orig.call(fs, target, mode, function(er3) {
+            return orig.call(fs2, target, mode, function(er3) {
               if (chownErOk(er3)) er3 = null;
               if (cb) cb.apply(this, arguments);
             });
@@ -6501,7 +6501,7 @@
           if (!orig) return orig;
           return function(target, mode) {
             try {
-              return orig.call(fs, target, mode);
+              return orig.call(fs2, target, mode);
             } catch (er3) {
               if (!chownErOk(er3)) throw er3;
             }
@@ -6510,7 +6510,7 @@
         function chownFix(orig) {
           if (!orig) return orig;
           return function(target, uid, gid, cb) {
-            return orig.call(fs, target, uid, gid, function(er3) {
+            return orig.call(fs2, target, uid, gid, function(er3) {
               if (chownErOk(er3)) er3 = null;
               if (cb) cb.apply(this, arguments);
             });
@@ -6520,7 +6520,7 @@
           if (!orig) return orig;
           return function(target, uid, gid) {
             try {
-              return orig.call(fs, target, uid, gid);
+              return orig.call(fs2, target, uid, gid);
             } catch (er3) {
               if (!chownErOk(er3)) throw er3;
             }
@@ -6540,13 +6540,13 @@
               }
               if (cb) cb.apply(this, arguments);
             }
-            return options ? orig.call(fs, target, options, callback) : orig.call(fs, target, callback);
+            return options ? orig.call(fs2, target, options, callback) : orig.call(fs2, target, callback);
           };
         }
         function statFixSync(orig) {
           if (!orig) return orig;
           return function(target, options) {
-            var stats = options ? orig.call(fs, target, options) : orig.call(fs, target);
+            var stats = options ? orig.call(fs2, target, options) : orig.call(fs2, target);
             if (stats) {
               if (stats.uid < 0) stats.uid += 4294967296;
               if (stats.gid < 0) stats.gid += 4294967296;
@@ -6575,16 +6575,16 @@
     "node_modules/graceful-fs/legacy-streams.js"(exports, module) {
       var Stream = __require("stream").Stream;
       module.exports = legacy;
-      function legacy(fs) {
+      function legacy(fs2) {
         return {
           ReadStream,
           WriteStream
         };
-        function ReadStream(path, options) {
-          if (!(this instanceof ReadStream)) return new ReadStream(path, options);
+        function ReadStream(path2, options) {
+          if (!(this instanceof ReadStream)) return new ReadStream(path2, options);
           Stream.call(this);
           var self = this;
-          this.path = path;
+          this.path = path2;
           this.fd = null;
           this.readable = true;
           this.paused = false;
@@ -6618,7 +6618,7 @@
             });
             return;
           }
-          fs.open(this.path, this.flags, this.mode, function(err, fd) {
+          fs2.open(this.path, this.flags, this.mode, function(err, fd) {
             if (err) {
               self.emit("error", err);
               self.readable = false;
@@ -6629,10 +6629,10 @@
             self._read();
           });
         }
-        function WriteStream(path, options) {
-          if (!(this instanceof WriteStream)) return new WriteStream(path, options);
+        function WriteStream(path2, options) {
+          if (!(this instanceof WriteStream)) return new WriteStream(path2, options);
           Stream.call(this);
-          this.path = path;
+          this.path = path2;
           this.fd = null;
           this.writable = true;
           this.flags = "w";
@@ -6657,7 +6657,7 @@
           this.busy = false;
           this._queue = [];
           if (this.fd === null) {
-            this._open = fs.open;
+            this._open = fs2.open;
             this._queue.push([this._open, this.path, this.flags, this.mode, void 0]);
             this.flush();
           }
@@ -6692,7 +6692,7 @@
   // node_modules/graceful-fs/graceful-fs.js
   var require_graceful_fs = __commonJS({
     "node_modules/graceful-fs/graceful-fs.js"(exports, module) {
-      var fs = __require("fs");
+      var fs2 = __require("fs");
       var polyfills = require_polyfills();
       var legacy = require_legacy_streams();
       var clone = require_clone();
@@ -6724,12 +6724,12 @@
           m = "GFS4: " + m.split(/\n/).join("\nGFS4: ");
           console.error(m);
         };
-      if (!fs[gracefulQueue]) {
+      if (!fs2[gracefulQueue]) {
         queue = global[gracefulQueue] || [];
-        publishQueue(fs, queue);
-        fs.close = (function(fs$close) {
+        publishQueue(fs2, queue);
+        fs2.close = (function(fs$close) {
           function close(fd, cb) {
-            return fs$close.call(fs, fd, function(err) {
+            return fs$close.call(fs2, fd, function(err) {
               if (!err) {
                 resetQueue();
               }
@@ -6741,48 +6741,48 @@
             value: fs$close
           });
           return close;
-        })(fs.close);
-        fs.closeSync = (function(fs$closeSync) {
+        })(fs2.close);
+        fs2.closeSync = (function(fs$closeSync) {
           function closeSync(fd) {
-            fs$closeSync.apply(fs, arguments);
+            fs$closeSync.apply(fs2, arguments);
             resetQueue();
           }
           Object.defineProperty(closeSync, previousSymbol, {
             value: fs$closeSync
           });
           return closeSync;
-        })(fs.closeSync);
+        })(fs2.closeSync);
         if (/\bgfs4\b/i.test(process.env.NODE_DEBUG || "")) {
           process.on("exit", function() {
-            debug(fs[gracefulQueue]);
-            __require("assert").equal(fs[gracefulQueue].length, 0);
+            debug(fs2[gracefulQueue]);
+            __require("assert").equal(fs2[gracefulQueue].length, 0);
           });
         }
       }
       var queue;
       if (!global[gracefulQueue]) {
-        publishQueue(global, fs[gracefulQueue]);
+        publishQueue(global, fs2[gracefulQueue]);
       }
-      module.exports = patch(clone(fs));
-      if (process.env.TEST_GRACEFUL_FS_GLOBAL_PATCH && !fs.__patched) {
-        module.exports = patch(fs);
-        fs.__patched = true;
+      module.exports = patch(clone(fs2));
+      if (process.env.TEST_GRACEFUL_FS_GLOBAL_PATCH && !fs2.__patched) {
+        module.exports = patch(fs2);
+        fs2.__patched = true;
       }
-      function patch(fs2) {
-        polyfills(fs2);
-        fs2.gracefulify = patch;
-        fs2.createReadStream = createReadStream;
-        fs2.createWriteStream = createWriteStream;
-        var fs$readFile = fs2.readFile;
-        fs2.readFile = readFile;
-        function readFile(path, options, cb) {
+      function patch(fs3) {
+        polyfills(fs3);
+        fs3.gracefulify = patch;
+        fs3.createReadStream = createReadStream;
+        fs3.createWriteStream = createWriteStream;
+        var fs$readFile = fs3.readFile;
+        fs3.readFile = readFile;
+        function readFile(path2, options, cb) {
           if (typeof options === "function")
             cb = options, options = null;
-          return go$readFile(path, options, cb);
-          function go$readFile(path2, options2, cb2, startTime) {
-            return fs$readFile(path2, options2, function(err) {
+          return go$readFile(path2, options, cb);
+          function go$readFile(path3, options2, cb2, startTime) {
+            return fs$readFile(path3, options2, function(err) {
               if (err && (err.code === "EMFILE" || err.code === "ENFILE"))
-                enqueue([go$readFile, [path2, options2, cb2], err, startTime || Date.now(), Date.now()]);
+                enqueue([go$readFile, [path3, options2, cb2], err, startTime || Date.now(), Date.now()]);
               else {
                 if (typeof cb2 === "function")
                   cb2.apply(this, arguments);
@@ -6790,16 +6790,16 @@
             });
           }
         }
-        var fs$writeFile = fs2.writeFile;
-        fs2.writeFile = writeFile;
-        function writeFile(path, data, options, cb) {
+        var fs$writeFile = fs3.writeFile;
+        fs3.writeFile = writeFile;
+        function writeFile(path2, data, options, cb) {
           if (typeof options === "function")
             cb = options, options = null;
-          return go$writeFile(path, data, options, cb);
-          function go$writeFile(path2, data2, options2, cb2, startTime) {
-            return fs$writeFile(path2, data2, options2, function(err) {
+          return go$writeFile(path2, data, options, cb);
+          function go$writeFile(path3, data2, options2, cb2, startTime) {
+            return fs$writeFile(path3, data2, options2, function(err) {
               if (err && (err.code === "EMFILE" || err.code === "ENFILE"))
-                enqueue([go$writeFile, [path2, data2, options2, cb2], err, startTime || Date.now(), Date.now()]);
+                enqueue([go$writeFile, [path3, data2, options2, cb2], err, startTime || Date.now(), Date.now()]);
               else {
                 if (typeof cb2 === "function")
                   cb2.apply(this, arguments);
@@ -6807,17 +6807,17 @@
             });
           }
         }
-        var fs$appendFile = fs2.appendFile;
+        var fs$appendFile = fs3.appendFile;
         if (fs$appendFile)
-          fs2.appendFile = appendFile;
-        function appendFile(path, data, options, cb) {
+          fs3.appendFile = appendFile;
+        function appendFile(path2, data, options, cb) {
           if (typeof options === "function")
             cb = options, options = null;
-          return go$appendFile(path, data, options, cb);
-          function go$appendFile(path2, data2, options2, cb2, startTime) {
-            return fs$appendFile(path2, data2, options2, function(err) {
+          return go$appendFile(path2, data, options, cb);
+          function go$appendFile(path3, data2, options2, cb2, startTime) {
+            return fs$appendFile(path3, data2, options2, function(err) {
               if (err && (err.code === "EMFILE" || err.code === "ENFILE"))
-                enqueue([go$appendFile, [path2, data2, options2, cb2], err, startTime || Date.now(), Date.now()]);
+                enqueue([go$appendFile, [path3, data2, options2, cb2], err, startTime || Date.now(), Date.now()]);
               else {
                 if (typeof cb2 === "function")
                   cb2.apply(this, arguments);
@@ -6825,9 +6825,9 @@
             });
           }
         }
-        var fs$copyFile = fs2.copyFile;
+        var fs$copyFile = fs3.copyFile;
         if (fs$copyFile)
-          fs2.copyFile = copyFile;
+          fs3.copyFile = copyFile;
         function copyFile(src, dest, flags, cb) {
           if (typeof flags === "function") {
             cb = flags;
@@ -6845,34 +6845,34 @@
             });
           }
         }
-        var fs$readdir = fs2.readdir;
-        fs2.readdir = readdir;
+        var fs$readdir = fs3.readdir;
+        fs3.readdir = readdir;
         var noReaddirOptionVersions = /^v[0-5]\./;
-        function readdir(path, options, cb) {
+        function readdir(path2, options, cb) {
           if (typeof options === "function")
             cb = options, options = null;
-          var go$readdir = noReaddirOptionVersions.test(process.version) ? function go$readdir2(path2, options2, cb2, startTime) {
-            return fs$readdir(path2, fs$readdirCallback(
-              path2,
+          var go$readdir = noReaddirOptionVersions.test(process.version) ? function go$readdir2(path3, options2, cb2, startTime) {
+            return fs$readdir(path3, fs$readdirCallback(
+              path3,
               options2,
               cb2,
               startTime
             ));
-          } : function go$readdir2(path2, options2, cb2, startTime) {
-            return fs$readdir(path2, options2, fs$readdirCallback(
-              path2,
+          } : function go$readdir2(path3, options2, cb2, startTime) {
+            return fs$readdir(path3, options2, fs$readdirCallback(
+              path3,
               options2,
               cb2,
               startTime
             ));
           };
-          return go$readdir(path, options, cb);
-          function fs$readdirCallback(path2, options2, cb2, startTime) {
+          return go$readdir(path2, options, cb);
+          function fs$readdirCallback(path3, options2, cb2, startTime) {
             return function(err, files) {
               if (err && (err.code === "EMFILE" || err.code === "ENFILE"))
                 enqueue([
                   go$readdir,
-                  [path2, options2, cb2],
+                  [path3, options2, cb2],
                   err,
                   startTime || Date.now(),
                   Date.now()
@@ -6887,21 +6887,21 @@
           }
         }
         if (process.version.substr(0, 4) === "v0.8") {
-          var legStreams = legacy(fs2);
+          var legStreams = legacy(fs3);
           ReadStream = legStreams.ReadStream;
           WriteStream = legStreams.WriteStream;
         }
-        var fs$ReadStream = fs2.ReadStream;
+        var fs$ReadStream = fs3.ReadStream;
         if (fs$ReadStream) {
           ReadStream.prototype = Object.create(fs$ReadStream.prototype);
           ReadStream.prototype.open = ReadStream$open;
         }
-        var fs$WriteStream = fs2.WriteStream;
+        var fs$WriteStream = fs3.WriteStream;
         if (fs$WriteStream) {
           WriteStream.prototype = Object.create(fs$WriteStream.prototype);
           WriteStream.prototype.open = WriteStream$open;
         }
-        Object.defineProperty(fs2, "ReadStream", {
+        Object.defineProperty(fs3, "ReadStream", {
           get: function() {
             return ReadStream;
           },
@@ -6911,7 +6911,7 @@
           enumerable: true,
           configurable: true
         });
-        Object.defineProperty(fs2, "WriteStream", {
+        Object.defineProperty(fs3, "WriteStream", {
           get: function() {
             return WriteStream;
           },
@@ -6922,7 +6922,7 @@
           configurable: true
         });
         var FileReadStream = ReadStream;
-        Object.defineProperty(fs2, "FileReadStream", {
+        Object.defineProperty(fs3, "FileReadStream", {
           get: function() {
             return FileReadStream;
           },
@@ -6933,7 +6933,7 @@
           configurable: true
         });
         var FileWriteStream = WriteStream;
-        Object.defineProperty(fs2, "FileWriteStream", {
+        Object.defineProperty(fs3, "FileWriteStream", {
           get: function() {
             return FileWriteStream;
           },
@@ -6943,7 +6943,7 @@
           enumerable: true,
           configurable: true
         });
-        function ReadStream(path, options) {
+        function ReadStream(path2, options) {
           if (this instanceof ReadStream)
             return fs$ReadStream.apply(this, arguments), this;
           else
@@ -6963,7 +6963,7 @@
             }
           });
         }
-        function WriteStream(path, options) {
+        function WriteStream(path2, options) {
           if (this instanceof WriteStream)
             return fs$WriteStream.apply(this, arguments), this;
           else
@@ -6981,22 +6981,22 @@
             }
           });
         }
-        function createReadStream(path, options) {
-          return new fs2.ReadStream(path, options);
+        function createReadStream(path2, options) {
+          return new fs3.ReadStream(path2, options);
         }
-        function createWriteStream(path, options) {
-          return new fs2.WriteStream(path, options);
+        function createWriteStream(path2, options) {
+          return new fs3.WriteStream(path2, options);
         }
-        var fs$open = fs2.open;
-        fs2.open = open;
-        function open(path, flags, mode, cb) {
+        var fs$open = fs3.open;
+        fs3.open = open;
+        function open(path2, flags, mode, cb) {
           if (typeof mode === "function")
             cb = mode, mode = null;
-          return go$open(path, flags, mode, cb);
-          function go$open(path2, flags2, mode2, cb2, startTime) {
-            return fs$open(path2, flags2, mode2, function(err, fd) {
+          return go$open(path2, flags, mode, cb);
+          function go$open(path3, flags2, mode2, cb2, startTime) {
+            return fs$open(path3, flags2, mode2, function(err, fd) {
               if (err && (err.code === "EMFILE" || err.code === "ENFILE"))
-                enqueue([go$open, [path2, flags2, mode2, cb2], err, startTime || Date.now(), Date.now()]);
+                enqueue([go$open, [path3, flags2, mode2, cb2], err, startTime || Date.now(), Date.now()]);
               else {
                 if (typeof cb2 === "function")
                   cb2.apply(this, arguments);
@@ -7004,20 +7004,20 @@
             });
           }
         }
-        return fs2;
+        return fs3;
       }
       function enqueue(elem) {
         debug("ENQUEUE", elem[0].name, elem[1]);
-        fs[gracefulQueue].push(elem);
+        fs2[gracefulQueue].push(elem);
         retry();
       }
       var retryTimer;
       function resetQueue() {
         var now = Date.now();
-        for (var i = 0; i < fs[gracefulQueue].length; ++i) {
-          if (fs[gracefulQueue][i].length > 2) {
-            fs[gracefulQueue][i][3] = now;
-            fs[gracefulQueue][i][4] = now;
+        for (var i = 0; i < fs2[gracefulQueue].length; ++i) {
+          if (fs2[gracefulQueue][i].length > 2) {
+            fs2[gracefulQueue][i][3] = now;
+            fs2[gracefulQueue][i][4] = now;
           }
         }
         retry();
@@ -7025,9 +7025,9 @@
       function retry() {
         clearTimeout(retryTimer);
         retryTimer = void 0;
-        if (fs[gracefulQueue].length === 0)
+        if (fs2[gracefulQueue].length === 0)
           return;
-        var elem = fs[gracefulQueue].shift();
+        var elem = fs2[gracefulQueue].shift();
         var fn2 = elem[0];
         var args = elem[1];
         var err = elem[2];
@@ -7049,7 +7049,7 @@
             debug("RETRY", fn2.name, args);
             fn2.apply(null, args.concat([startTime]));
           } else {
-            fs[gracefulQueue].push(elem);
+            fs2[gracefulQueue].push(elem);
           }
         }
         if (retryTimer === void 0) {
@@ -7384,7 +7384,7 @@
   var require_path = __commonJS({
     "node_modules/enhanced-resolve/lib/util/path.js"(exports, module) {
       "use strict";
-      var path = __require("path");
+      var path2 = __require("path");
       var fileURLToPath = function (u) {
     if (u && typeof u === "object") {
       if (typeof u.pathname === "string" && u.pathname) return u.pathname;
@@ -7401,8 +7401,8 @@
       var CHAR_LOWER_Z = "z".charCodeAt(0);
       var CHAR_DOT = ".".charCodeAt(0);
       var CHAR_COLON = ":".charCodeAt(0);
-      var posixNormalize = path.posix.normalize;
-      var winNormalize = path.win32.normalize;
+      var posixNormalize = path2.posix.normalize;
+      var winNormalize = path2.win32.normalize;
       var PathType = Object.freeze({
         Empty: 0,
         Normal: 1,
@@ -7531,9 +7531,9 @@
       var dirname = (maybePath) => {
         switch (getType(maybePath)) {
           case PathType.AbsoluteWin:
-            return path.win32.dirname(maybePath);
+            return path2.win32.dirname(maybePath);
         }
-        return path.posix.dirname(maybePath);
+        return path2.posix.dirname(maybePath);
       };
       var createCachedJoin = () => {
         const cache = /* @__PURE__ */ new Map();
@@ -7574,7 +7574,7 @@
             cacheEntry = inner.get(suffix);
             if (cacheEntry !== void 0) return cacheEntry;
           }
-          cacheEntry = path.basename(maybePath, suffix);
+          cacheEntry = path2.basename(maybePath, suffix);
           inner.set(suffix, cacheEntry);
           return cacheEntry;
         };
@@ -8120,9 +8120,9 @@
           resolver2.getHook(this.source).tapAsync(
             "DescriptionFilePlugin",
             (request, resolveContext, callback) => {
-              const { path } = request;
-              if (!path) return callback();
-              const directory = this.pathIsFile ? DescriptionFileUtils.cdUp(path) : path;
+              const { path: path2 } = request;
+              if (!path2) return callback();
+              const directory = this.pathIsFile ? DescriptionFileUtils.cdUp(path2) : path2;
               if (!directory) return callback();
               DescriptionFileUtils.loadDescriptionFile(
                 resolver2,
@@ -8147,7 +8147,7 @@
                     }
                     return callback();
                   }
-                  const rawRelative = path.slice(result.directory.length);
+                  const rawRelative = path2.slice(result.directory.length);
                   const relativePath = `.${rawRelative.includes("\\") ? rawRelative.replace(BACKSLASH_G, "/") : rawRelative}`;
                   const obj = __spreadProps(__spreadValues({}, request), {
                     descriptionFilePath: result.path,
@@ -8197,10 +8197,10 @@
           resolver2.getHook(this.source).tapAsync(
             "DirectoryExistsPlugin",
             (request, resolveContext, callback) => {
-              const fs = resolver2.fileSystem;
+              const fs2 = resolver2.fileSystem;
               const directory = request.path;
               if (!directory) return callback();
-              fs.stat(directory, (err, stat) => {
+              fs2.stat(directory, (err, stat) => {
                 if (err || !stat || !stat.isDirectory()) {
                   if (resolveContext.missingDependencies) {
                     resolveContext.missingDependencies.add(directory);
@@ -8787,15 +8787,15 @@
                * @param {number} i index
                * @returns {void}
                */
-              (path, callback2, i) => {
-                const parsedIdentifier = parseIdentifier(path);
+              (path2, callback2, i) => {
+                const parsedIdentifier = parseIdentifier(path2);
                 if (!parsedIdentifier) return callback2();
                 const [relativePath, query, fragment] = parsedIdentifier;
                 if (!relativePath.startsWith("./")) {
                   if (paths.length === i) {
                     return callback2(
                       new Error(
-                        `Invalid "exports" target "${path}" defined for "${usedField}" in the package config ${request.descriptionFilePath}, targets must start with "./"`
+                        `Invalid "exports" target "${path2}" defined for "${usedField}" in the package config ${request.descriptionFilePath}, targets must start with "./"`
                       )
                     );
                   }
@@ -8806,7 +8806,7 @@
                   if (paths.length === i) {
                     return callback2(
                       new Error(
-                        `Invalid "exports" target "${path}" defined for "${usedField}" in the package config ${request.descriptionFilePath}, targets must start with "./"`
+                        `Invalid "exports" target "${path2}" defined for "${usedField}" in the package config ${request.descriptionFilePath}, targets must start with "./"`
                       )
                     );
                   }
@@ -8829,7 +8829,7 @@
                 resolver2.doResolve(
                   target,
                   obj,
-                  `using exports field: ${path}`,
+                  `using exports field: ${path2}`,
                   resolveContext,
                   (err, result) => {
                     if (err) return callback2(err);
@@ -8969,11 +8969,11 @@
          */
         apply(resolver2) {
           const target = resolver2.ensureHook(this.target);
-          const fs = resolver2.fileSystem;
+          const fs2 = resolver2.fileSystem;
           resolver2.getHook(this.source).tapAsync("FileExistsPlugin", (request, resolveContext, callback) => {
             const file = request.path;
             if (!file) return callback();
-            fs.stat(file, (err, stat) => {
+            fs2.stat(file, (err, stat) => {
               if (err || !stat || !stat.isFile()) {
                 if (resolveContext.missingDependencies) {
                   resolveContext.missingDependencies.add(file);
@@ -9094,8 +9094,8 @@
                * @param {number} i index
                * @returns {void}
                */
-              (path, callback2, i) => {
-                const parsedIdentifier = parseIdentifier(path);
+              (path2, callback2, i) => {
+                const parsedIdentifier = parseIdentifier(path2);
                 if (!parsedIdentifier) return callback2();
                 const [path_, query, fragment] = parsedIdentifier;
                 switch (path_.charCodeAt(0)) {
@@ -9106,7 +9106,7 @@
                       if (paths.length === i) {
                         return callback2(
                           new Error(
-                            `Invalid "imports" target "${path}" defined for "${usedField}" in the package config ${request.descriptionFilePath}, targets must start with "./"`
+                            `Invalid "imports" target "${path2}" defined for "${usedField}" in the package config ${request.descriptionFilePath}, targets must start with "./"`
                           )
                         );
                       }
@@ -9126,7 +9126,7 @@
                     resolver2.doResolve(
                       targetFile,
                       obj,
-                      `using imports field: ${path}`,
+                      `using imports field: ${path2}`,
                       resolveContext,
                       (err, result) => {
                         if (err) return callback2(err);
@@ -9148,7 +9148,7 @@
                     resolver2.doResolve(
                       targetPackage,
                       obj,
-                      `using imports field: ${path}`,
+                      `using imports field: ${path2}`,
                       resolveContext,
                       (err, result) => {
                         if (err) return callback2(err);
@@ -9347,17 +9347,17 @@
   var require_getPaths = __commonJS({
     "node_modules/enhanced-resolve/lib/getPaths.js"(exports, module) {
       "use strict";
-      function getPaths(path) {
-        if (path === "/") return { paths: ["/"], segments: [""] };
-        const parts = path.split(/(.*?[\\/]+)/);
-        const paths = [path];
+      function getPaths(path2) {
+        if (path2 === "/") return { paths: ["/"], segments: [""] };
+        const parts = path2.split(/(.*?[\\/]+)/);
+        const paths = [path2];
         const segments = [parts[parts.length - 1]];
         let part = parts[parts.length - 1];
-        path = path.slice(0, Math.max(0, path.length - part.length - 1));
+        path2 = path2.slice(0, Math.max(0, path2.length - part.length - 1));
         for (let i = parts.length - 2; i > 2; i -= 2) {
-          paths.push(path);
+          paths.push(path2);
           part = parts[i];
-          path = path.slice(0, Math.max(0, path.length - part.length)) || "/";
+          path2 = path2.slice(0, Math.max(0, path2.length - part.length)) || "/";
           segments.push(part.slice(0, -1));
         }
         [, part] = parts;
@@ -9369,17 +9369,17 @@
         };
       }
       var _getPathsCacheByFs = /* @__PURE__ */ new WeakMap();
-      function getPathsCached(fileSystem, path) {
+      function getPathsCached(fileSystem, path2) {
         let cache = _getPathsCacheByFs.get(fileSystem);
         if (cache === void 0) {
           cache = /* @__PURE__ */ new Map();
           _getPathsCacheByFs.set(fileSystem, cache);
         } else {
-          const cached = cache.get(path);
+          const cached = cache.get(path2);
           if (cached !== void 0) return cached;
         }
-        const result = getPaths(path);
-        cache.set(path, result);
+        const result = getPaths(path2);
+        cache.set(path2, result);
         return result;
       }
       module.exports = getPaths;
@@ -9395,7 +9395,7 @@
       var { getPathsCached } = require_getPaths();
       var _addrsCacheByDirs = /* @__PURE__ */ new WeakMap();
       function modulesResolveHandler(resolver2, directories, target, request, resolveContext, callback) {
-        const fs = resolver2.fileSystem;
+        const fs2 = resolver2.fileSystem;
         const requestPath = (
           /** @type {string} */
           request.path
@@ -9409,7 +9409,7 @@
           addrs = perPath.get(requestPath);
         }
         if (addrs === void 0) {
-          const { paths } = getPathsCached(fs, requestPath);
+          const { paths } = getPathsCached(fs2, requestPath);
           const pathsLen = paths.length;
           const dirsLen = directories.length;
           addrs = new Array(pathsLen * dirsLen);
@@ -9432,7 +9432,7 @@
            * @returns {void}
            */
           (addr, callback2) => {
-            fs.stat(addr, (err, stat) => {
+            fs2.stat(addr, (err, stat) => {
               if (!err && stat && stat.isDirectory()) {
                 const obj = __spreadProps(__spreadValues({}, request), {
                   path: addr,
@@ -9517,9 +9517,9 @@
          * @param {string} path path
          * @param {string | ResolveStepHook} target target
          */
-        constructor(source, path, target) {
+        constructor(source, path2, target) {
           this.source = source;
-          this.path = path;
+          this.path = path2;
           this.target = target;
         }
         /**
@@ -11046,9 +11046,9 @@ ${next()}}
           * @param {ResolveContext} resolveContext resolve context
           * @returns {Promise<string | false>} result
           */
-          (self, context, path, request, resolveContext) => {
+          (self, context, path2, request, resolveContext) => {
             const { promise, resolve: resolve2, reject } = Promise.withResolvers();
-            self.resolve(context, path, request, resolveContext, (err, res) => {
+            self.resolve(context, path2, request, resolveContext, (err, res) => {
               if (err) reject(err);
               else resolve2(
                 /** @type {string | false} */
@@ -11066,8 +11066,8 @@ ${next()}}
           * @param {ResolveContext} resolveContext resolve context
           * @returns {Promise<string | false>} result
           */
-          (self, context, path, request, resolveContext) => new Promise((resolve2, reject) => {
-            self.resolve(context, path, request, resolveContext, (err, res) => {
+          (self, context, path2, request, resolveContext) => new Promise((resolve2, reject) => {
+            self.resolve(context, path2, request, resolveContext, (err, res) => {
               if (err) reject(err);
               else resolve2(
                 /** @type {string | false} */
@@ -11670,52 +11670,52 @@ Stack:
          * @param {string} path path
          * @returns {boolean} true, if the path is a module
          */
-        isModule(path) {
-          return getType(path) === PathType.Normal;
+        isModule(path2) {
+          return getType(path2) === PathType.Normal;
         }
         /**
          * @param {string} path path
          * @returns {boolean} true, if the path is private
          */
-        isPrivate(path) {
-          return getType(path) === PathType.Internal;
+        isPrivate(path2) {
+          return getType(path2) === PathType.Internal;
         }
         /**
          * @param {string} path a path
          * @returns {boolean} true, if the path is a directory path
          */
-        isDirectory(path) {
-          return path.endsWith("/");
+        isDirectory(path2) {
+          return path2.endsWith("/");
         }
         /**
          * @param {string} path path
          * @returns {string} normalized path
          */
-        normalize(path) {
-          return normalize(path);
+        normalize(path2) {
+          return normalize(path2);
         }
         /**
          * @param {string} path path
          * @param {string} request request
          * @returns {string} joined path
          */
-        join(path, request) {
-          return this.pathCache.join.fn(path, request);
+        join(path2, request) {
+          return this.pathCache.join.fn(path2, request);
         }
         /**
          * @param {string} path path
          * @returns {string} parent directory
          */
-        dirname(path) {
-          return this.pathCache.dirname.fn(path);
+        dirname(path2) {
+          return this.pathCache.dirname.fn(path2);
         }
         /**
          * @param {string} path the path to evaluate
          * @param {string=} suffix an extension to remove from the result
          * @returns {string} the last portion of a path
          */
-        basename(path, suffix) {
-          return this.pathCache.basename.fn(path, suffix);
+        basename(path2, suffix) {
+          return this.pathCache.basename.fn(path2, suffix);
         }
       };
       module.exports = Resolver;
@@ -11749,20 +11749,20 @@ Stack:
         apply(resolver2) {
           resolver2.getHook(this.source).tapAsync("RestrictionsPlugin", (request, resolveContext, callback) => {
             if (typeof request.path === "string") {
-              const { path } = request;
+              const { path: path2 } = request;
               for (const restriction of this._restrictions) {
                 if (restriction.type === "path") {
-                  if (isInside(restriction.rule, path)) continue;
+                  if (isInside(restriction.rule, path2)) continue;
                   if (resolveContext.log) {
                     resolveContext.log(
-                      `${path} is not inside of the restriction ${restriction.rule}`
+                      `${path2} is not inside of the restriction ${restriction.rule}`
                     );
                   }
                 } else {
-                  if (restriction.rule.test(path)) continue;
+                  if (restriction.rule.test(path2)) continue;
                   if (resolveContext.log) {
                     resolveContext.log(
-                      `${path} doesn't match the restriction ${restriction.rule}`
+                      `${path2} doesn't match the restriction ${restriction.rule}`
                     );
                   }
                 }
@@ -11852,10 +11852,10 @@ Stack:
                * @returns {void}
                */
               (root, callback2) => {
-                const path = resolver2.join(root, req.slice(1));
+                const path2 = resolver2.join(root, req.slice(1));
                 const obj = __spreadProps(__spreadValues({}, request), {
-                  path,
-                  relativePath: request.relativePath && path
+                  path: path2,
+                  relativePath: request.relativePath && path2
                 });
                 resolver2.doResolve(
                   target,
@@ -11975,11 +11975,11 @@ Stack:
          */
         apply(resolver2) {
           const target = resolver2.ensureHook(this.target);
-          const fs = resolver2.fileSystem;
+          const fs2 = resolver2.fileSystem;
           resolver2.getHook(this.source).tapAsync("SymlinkPlugin", (request, resolveContext, callback) => {
             if (request.ignoreSymlinks) return callback();
             const pathsResult = getPathsCached(
-              fs,
+              fs2,
               /** @type {string} */
               request.path
             );
@@ -11994,12 +11994,12 @@ Stack:
                * @param {(err?: null | Error, result?: null | number) => void} callback callback
                * @returns {void}
                */
-              (path, callback2) => {
+              (path2, callback2) => {
                 idx++;
                 if (resolveContext.fileDependencies) {
-                  resolveContext.fileDependencies.add(path);
+                  resolveContext.fileDependencies.add(path2);
                 }
-                fs.readlink(path, (err, result) => {
+                fs2.readlink(path2, (err, result) => {
                   if (!err && result) {
                     if (pathSegments === null) {
                       pathSegments = [...segments];
@@ -12056,18 +12056,18 @@ Stack:
   var require_SyncAsyncFileSystemDecorator = __commonJS({
     "node_modules/enhanced-resolve/lib/SyncAsyncFileSystemDecorator.js"(exports, module) {
       "use strict";
-      function SyncAsyncFileSystemDecorator(fs) {
-        this.fs = fs;
+      function SyncAsyncFileSystemDecorator(fs2) {
+        this.fs = fs2;
         this.lstat = void 0;
         this.lstatSync = void 0;
-        const { lstatSync } = fs;
+        const { lstatSync } = fs2;
         if (lstatSync) {
           this.lstat = /** @type {FileSystem["lstat"]} */
           ((arg, options, callback) => {
             let result;
             try {
               result = /** @type {SyncOrAsyncFunction | undefined} */
-              callback ? lstatSync.call(fs, arg, options) : lstatSync.call(fs, arg);
+              callback ? lstatSync.call(fs2, arg, options) : lstatSync.call(fs2, arg);
             } catch (err) {
               return (callback || options)(
                 /** @type {NodeJS.ErrnoException | null} */
@@ -12081,14 +12081,14 @@ Stack:
             );
           });
           this.lstatSync = /** @type {SyncFileSystem["lstatSync"]} */
-          ((arg, options) => lstatSync.call(fs, arg, options));
+          ((arg, options) => lstatSync.call(fs2, arg, options));
         }
         this.stat = /** @type {FileSystem["stat"]} */
         ((arg, options, callback) => {
           let result;
           try {
             result = /** @type {SyncOrAsyncFunction | undefined} */
-            callback ? fs.statSync(arg, options) : fs.statSync(arg);
+            callback ? fs2.statSync(arg, options) : fs2.statSync(arg);
           } catch (err) {
             return (callback || options)(
               /** @type {NodeJS.ErrnoException | null} */
@@ -12102,17 +12102,17 @@ Stack:
           );
         });
         this.statSync = /** @type {SyncFileSystem["statSync"]} */
-        ((arg, options) => fs.statSync(arg, options));
+        ((arg, options) => fs2.statSync(arg, options));
         this.readdir = /** @type {FileSystem["readdir"]} */
         ((arg, options, callback) => {
           let result;
           try {
             result = /** @type {SyncOrAsyncFunction | undefined} */
-            callback ? fs.readdirSync(
+            callback ? fs2.readdirSync(
               arg,
               /** @type {Exclude<Parameters<FileSystem["readdir"]>[1], (err: NodeJS.ErrnoException | null, files: string[]) => void>} */
               options
-            ) : fs.readdirSync(arg);
+            ) : fs2.readdirSync(arg);
           } catch (err) {
             return (callback || options)(
               /** @type {NodeJS.ErrnoException | null} */
@@ -12127,7 +12127,7 @@ Stack:
           );
         });
         this.readdirSync = /** @type {SyncFileSystem["readdirSync"]} */
-        ((arg, options) => fs.readdirSync(
+        ((arg, options) => fs2.readdirSync(
           arg,
           /** @type {Parameters<SyncFileSystem["readdirSync"]>[1]} */
           options
@@ -12137,7 +12137,7 @@ Stack:
           let result;
           try {
             result = /** @type {SyncOrAsyncFunction | undefined} */
-            callback ? fs.readFileSync(arg, options) : fs.readFileSync(arg);
+            callback ? fs2.readFileSync(arg, options) : fs2.readFileSync(arg);
           } catch (err) {
             return (callback || options)(
               /** @type {NodeJS.ErrnoException | null} */
@@ -12151,17 +12151,17 @@ Stack:
           );
         });
         this.readFileSync = /** @type {SyncFileSystem["readFileSync"]} */
-        ((arg, options) => fs.readFileSync(arg, options));
+        ((arg, options) => fs2.readFileSync(arg, options));
         this.readlink = /** @type {FileSystem["readlink"]} */
         ((arg, options, callback) => {
           let result;
           try {
             result = /** @type {SyncOrAsyncFunction | undefined} */
-            callback ? fs.readlinkSync(
+            callback ? fs2.readlinkSync(
               arg,
               /** @type {Exclude<Parameters<FileSystem["readlink"]>[1], StringCallback>} */
               options
-            ) : fs.readlinkSync(arg);
+            ) : fs2.readlinkSync(arg);
           } catch (err) {
             return (callback || options)(
               /** @type {NodeJS.ErrnoException | null} */
@@ -12175,20 +12175,20 @@ Stack:
           );
         });
         this.readlinkSync = /** @type {SyncFileSystem["readlinkSync"]} */
-        ((arg, options) => fs.readlinkSync(
+        ((arg, options) => fs2.readlinkSync(
           arg,
           /** @type {Parameters<SyncFileSystem["readlinkSync"]>[1]} */
           options
         ));
         this.readJson = void 0;
         this.readJsonSync = void 0;
-        const { readJsonSync } = fs;
+        const { readJsonSync } = fs2;
         if (readJsonSync) {
           this.readJson = /** @type {FileSystem["readJson"]} */
           ((arg, callback) => {
             let result;
             try {
-              result = readJsonSync.call(fs, arg);
+              result = readJsonSync.call(fs2, arg);
             } catch (err) {
               return callback(
                 /** @type {NodeJS.ErrnoException | Error | null} */
@@ -12198,11 +12198,11 @@ Stack:
             callback(null, result);
           });
           this.readJsonSync = /** @type {SyncFileSystem["readJsonSync"]} */
-          ((arg) => readJsonSync.call(fs, arg));
+          ((arg) => readJsonSync.call(fs2, arg));
         }
         this.realpath = void 0;
         this.realpathSync = void 0;
-        const { realpathSync } = fs;
+        const { realpathSync } = fs2;
         if (realpathSync) {
           this.realpath = /** @type {FileSystem["realpath"]} */
           ((arg, options, callback) => {
@@ -12210,11 +12210,11 @@ Stack:
             try {
               result = /** @type {SyncOrAsyncFunction | undefined} */
               callback ? realpathSync.call(
-                fs,
+                fs2,
                 arg,
                 /** @type {Exclude<Parameters<NonNullable<FileSystem["realpath"]>>[1], StringCallback>} */
                 options
-              ) : realpathSync.call(fs, arg);
+              ) : realpathSync.call(fs2, arg);
             } catch (err) {
               return (callback || options)(
                 /** @type {NodeJS.ErrnoException | null} */
@@ -12229,7 +12229,7 @@ Stack:
           });
           this.realpathSync = /** @type {SyncFileSystem["realpathSync"]} */
           ((arg, options) => realpathSync.call(
-            fs,
+            fs2,
             arg,
             /** @type {Parameters<NonNullable<SyncFileSystem["realpathSync"]>>[1]} */
             options
@@ -13780,9 +13780,9 @@ Stack:
       var memoize = require_memoize();
       var getCachedFileSystem = memoize(() => require_CachedInputFileSystem());
       var getNodeFileSystem = memoize(() => {
-        const fs = require_graceful_fs();
+        const fs2 = require_graceful_fs();
         const CachedInputFileSystem = getCachedFileSystem();
-        return new CachedInputFileSystem(fs, 4e3);
+        return new CachedInputFileSystem(fs2, 4e3);
       });
       var getNodeContext = memoize(() => ({
         environments: ["node+es3+es5+process+native"]
@@ -14178,27 +14178,27 @@ Stack:
         };
       }
       var normalize = lruMemoize(function normalize2(aPath) {
-        var path = aPath;
+        var path2 = aPath;
         var url = urlParse(aPath);
         if (url) {
           if (!url.path) {
             return aPath;
           }
-          path = url.path;
+          path2 = url.path;
         }
-        var isAbsolute = exports.isAbsolute(path);
+        var isAbsolute = exports.isAbsolute(path2);
         var parts = [];
         var start = 0;
         var i = 0;
         while (true) {
           start = i;
-          i = path.indexOf("/", start);
+          i = path2.indexOf("/", start);
           if (i === -1) {
-            parts.push(path.slice(start));
+            parts.push(path2.slice(start));
             break;
           } else {
-            parts.push(path.slice(start, i));
-            while (i < path.length && path[i] === "/") {
+            parts.push(path2.slice(start, i));
+            while (i < path2.length && path2[i] === "/") {
               i++;
             }
           }
@@ -14219,15 +14219,15 @@ Stack:
             }
           }
         }
-        path = parts.join("/");
-        if (path === "") {
-          path = isAbsolute ? "/" : ".";
+        path2 = parts.join("/");
+        if (path2 === "") {
+          path2 = isAbsolute ? "/" : ".";
         }
         if (url) {
-          url.path = path;
+          url.path = path2;
           return urlGenerate(url);
         }
-        return path;
+        return path2;
       });
       exports.normalize = normalize;
       function join(aRoot, aPath) {
@@ -16550,7 +16550,7 @@ Stack:
       var fill = require_fill_range();
       var utils = require_utils2();
       var compile = (ast, options = {}) => {
-        const walk = (node, parent = {}) => {
+        const walk2 = (node, parent = {}) => {
           const invalidBlock = utils.isInvalidBrace(parent);
           const invalidNode = node.invalid === true && options.escapeInvalid === true;
           const invalid = invalidBlock === true || invalidNode === true;
@@ -16584,12 +16584,12 @@ Stack:
           }
           if (node.nodes) {
             for (const child of node.nodes) {
-              output += walk(child, node);
+              output += walk2(child, node);
             }
           }
           return output;
         };
-        return walk(ast);
+        return walk2(ast);
       };
       module.exports = compile;
     }
@@ -16626,7 +16626,7 @@ Stack:
       };
       var expand = (ast, options = {}) => {
         const rangeLimit = options.rangeLimit === void 0 ? 1e3 : options.rangeLimit;
-        const walk = (node, parent = {}) => {
+        const walk2 = (node, parent = {}) => {
           node.queue = [];
           let p2 = parent;
           let q2 = parent.queue;
@@ -16678,12 +16678,12 @@ Stack:
               continue;
             }
             if (child.nodes) {
-              walk(child, node);
+              walk2(child, node);
             }
           }
           return queue;
         };
-        return utils.flatten(walk(ast));
+        return utils.flatten(walk2(ast));
       };
       module.exports = expand;
     }
@@ -17095,7 +17095,7 @@ Stack:
   var require_constants2 = __commonJS({
     "node_modules/picomatch/lib/constants.js"(exports, module) {
       "use strict";
-      var path = __require("path");
+      var path2 = __require("path");
       var WIN_SLASH = "\\\\/";
       var WIN_NO_SLASH = `[^${WIN_SLASH}]`;
       var DEFAULT_MAX_EXTGLOB_RECURSION = 0;
@@ -17268,7 +17268,7 @@ Stack:
         /* | */
         CHAR_ZERO_WIDTH_NOBREAK_SPACE: 65279,
         /* \uFEFF */
-        SEP: path.sep,
+        SEP: path2.sep,
         /**
          * Create EXTGLOB_CHARS
          */
@@ -17295,7 +17295,7 @@ Stack:
   var require_utils3 = __commonJS({
     "node_modules/picomatch/lib/utils.js"(exports) {
       "use strict";
-      var path = __require("path");
+      var path2 = __require("path");
       var win32 = process.platform === "win32";
       var {
         REGEX_BACKSLASH,
@@ -17324,7 +17324,7 @@ Stack:
         if (options && typeof options.windows === "boolean") {
           return options.windows;
         }
-        return win32 === true || path.sep === "\\";
+        return win32 === true || path2.sep === "\\";
       };
       exports.escapeLast = (input, char, lastIdx) => {
         const idx = input.lastIndexOf(char, lastIdx);
@@ -18688,7 +18688,7 @@ Stack:
   var require_picomatch = __commonJS({
     "node_modules/picomatch/lib/picomatch.js"(exports, module) {
       "use strict";
-      var path = __require("path");
+      var path2 = __require("path");
       var scan = require_scan();
       var parse2 = require_parse2();
       var utils = require_utils3();
@@ -18773,7 +18773,7 @@ Stack:
       };
       picomatch.matchBase = (input, glob, options, posix2 = utils.isWindows(options)) => {
         const regex = glob instanceof RegExp ? glob : picomatch.makeRe(glob, options);
-        return regex.test(path.basename(input));
+        return regex.test(path2.basename(input));
       };
       picomatch.isMatch = (str, patterns, options) => picomatch(patterns, options)(str);
       picomatch.parse = (pattern, options) => {
@@ -19145,7 +19145,7 @@ Stack:
   // node_modules/@parcel/watcher/wrapper.js
   var require_wrapper = __commonJS({
     "node_modules/@parcel/watcher/wrapper.js"(exports) {
-      var path = __require("path");
+      var path2 = __require("path");
       var micromatch = require_micromatch();
       var isGlob = require_is_glob();
       function normalizeOptions(dir, opts = {}) {
@@ -19173,7 +19173,7 @@ Stack:
               if (!opts.ignorePaths) {
                 opts.ignorePaths = [];
               }
-              opts.ignorePaths.push(path.resolve(dir, value));
+              opts.ignorePaths.push(path2.resolve(dir, value));
             }
           }
         }
@@ -19183,20 +19183,20 @@ Stack:
         return {
           writeSnapshot(dir, snapshot, opts) {
             return binding.writeSnapshot(
-              path.resolve(dir),
-              path.resolve(snapshot),
+              path2.resolve(dir),
+              path2.resolve(snapshot),
               normalizeOptions(dir, opts)
             );
           },
           getEventsSince(dir, snapshot, opts) {
             return binding.getEventsSince(
-              path.resolve(dir),
-              path.resolve(snapshot),
+              path2.resolve(dir),
+              path2.resolve(snapshot),
               normalizeOptions(dir, opts)
             );
           },
           async subscribe(dir, fn2, opts) {
-            dir = path.resolve(dir);
+            dir = path2.resolve(dir);
             opts = normalizeOptions(dir, opts);
             await binding.subscribe(dir, fn2, opts);
             return {
@@ -19207,7 +19207,7 @@ Stack:
           },
           unsubscribe(dir, fn2, opts) {
             return binding.unsubscribe(
-              path.resolve(dir),
+              path2.resolve(dir),
               fn2,
               normalizeOptions(dir, opts)
             );
@@ -19243,9 +19243,9 @@ Stack:
       function versionFromMuslLdd(out) {
         return out.split(/[\r\n]+/)[1].trim().split(/\s/)[1];
       }
-      function safeReaddirSync(path) {
+      function safeReaddirSync(path2) {
         try {
-          return readdirSync(path);
+          return readdirSync(path2);
         } catch (e3) {
         }
         return [];
@@ -20517,6 +20517,9 @@ Stack:
   var tailwindcss_default = '@layer theme, base, components, utilities;\n\n@layer theme {\n  @theme default {\n    --font-sans:\n      -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",\n      "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",\n      "Segoe UI Symbol", "Noto Color Emoji";\n    --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;\n    --font-mono:\n      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",\n      "Courier New", monospace;\n\n    --color-red-50: oklch(97.1% 0.013 17.38);\n    --color-red-100: oklch(93.6% 0.032 17.717);\n    --color-red-200: oklch(88.5% 0.062 18.334);\n    --color-red-300: oklch(80.8% 0.114 19.571);\n    --color-red-400: oklch(70.4% 0.191 22.216);\n    --color-red-500: oklch(63.7% 0.237 25.331);\n    --color-red-600: oklch(57.7% 0.245 27.325);\n    --color-red-700: oklch(50.5% 0.213 27.518);\n    --color-red-800: oklch(44.4% 0.177 26.899);\n    --color-red-900: oklch(39.6% 0.141 25.723);\n    --color-red-950: oklch(25.8% 0.092 26.042);\n\n    --color-orange-50: oklch(98% 0.016 73.684);\n    --color-orange-100: oklch(95.4% 0.038 75.164);\n    --color-orange-200: oklch(90.1% 0.076 70.697);\n    --color-orange-300: oklch(83.7% 0.128 66.29);\n    --color-orange-400: oklch(75% 0.183 55.934);\n    --color-orange-500: oklch(70.5% 0.213 47.604);\n    --color-orange-600: oklch(64.6% 0.222 41.116);\n    --color-orange-700: oklch(55.3% 0.195 38.402);\n    --color-orange-800: oklch(47% 0.157 37.304);\n    --color-orange-900: oklch(40.8% 0.123 38.172);\n    --color-orange-950: oklch(26.6% 0.079 36.259);\n\n    --color-amber-50: oklch(98.7% 0.022 95.277);\n    --color-amber-100: oklch(96.2% 0.059 95.617);\n    --color-amber-200: oklch(92.4% 0.12 95.746);\n    --color-amber-300: oklch(87.9% 0.169 91.605);\n    --color-amber-400: oklch(82.8% 0.189 84.429);\n    --color-amber-500: oklch(76.9% 0.188 70.08);\n    --color-amber-600: oklch(66.6% 0.179 58.318);\n    --color-amber-700: oklch(55.5% 0.163 48.998);\n    --color-amber-800: oklch(47.3% 0.137 46.201);\n    --color-amber-900: oklch(41.4% 0.112 45.904);\n    --color-amber-950: oklch(27.9% 0.077 45.635);\n\n    --color-yellow-50: oklch(98.7% 0.026 102.212);\n    --color-yellow-100: oklch(97.3% 0.071 103.193);\n    --color-yellow-200: oklch(94.5% 0.129 101.54);\n    --color-yellow-300: oklch(90.5% 0.182 98.111);\n    --color-yellow-400: oklch(85.2% 0.199 91.936);\n    --color-yellow-500: oklch(79.5% 0.184 86.047);\n    --color-yellow-600: oklch(68.1% 0.162 75.834);\n    --color-yellow-700: oklch(55.4% 0.135 66.442);\n    --color-yellow-800: oklch(47.6% 0.114 61.907);\n    --color-yellow-900: oklch(42.1% 0.095 57.708);\n    --color-yellow-950: oklch(28.6% 0.066 53.813);\n\n    --color-lime-50: oklch(98.6% 0.031 120.757);\n    --color-lime-100: oklch(96.7% 0.067 122.328);\n    --color-lime-200: oklch(93.8% 0.127 124.321);\n    --color-lime-300: oklch(89.7% 0.196 126.665);\n    --color-lime-400: oklch(84.1% 0.238 128.85);\n    --color-lime-500: oklch(76.8% 0.233 130.85);\n    --color-lime-600: oklch(64.8% 0.2 131.684);\n    --color-lime-700: oklch(53.2% 0.157 131.589);\n    --color-lime-800: oklch(45.3% 0.124 130.933);\n    --color-lime-900: oklch(40.5% 0.101 131.063);\n    --color-lime-950: oklch(27.4% 0.072 132.109);\n\n    --color-green-50: oklch(98.2% 0.018 155.826);\n    --color-green-100: oklch(96.2% 0.044 156.743);\n    --color-green-200: oklch(92.5% 0.084 155.995);\n    --color-green-300: oklch(87.1% 0.15 154.449);\n    --color-green-400: oklch(79.2% 0.209 151.711);\n    --color-green-500: oklch(72.3% 0.219 149.579);\n    --color-green-600: oklch(62.7% 0.194 149.214);\n    --color-green-700: oklch(52.7% 0.154 150.069);\n    --color-green-800: oklch(44.8% 0.119 151.328);\n    --color-green-900: oklch(39.3% 0.095 152.535);\n    --color-green-950: oklch(26.6% 0.065 152.934);\n\n    --color-emerald-50: oklch(97.9% 0.021 166.113);\n    --color-emerald-100: oklch(95% 0.052 163.051);\n    --color-emerald-200: oklch(90.5% 0.093 164.15);\n    --color-emerald-300: oklch(84.5% 0.143 164.978);\n    --color-emerald-400: oklch(76.5% 0.177 163.223);\n    --color-emerald-500: oklch(69.6% 0.17 162.48);\n    --color-emerald-600: oklch(59.6% 0.145 163.225);\n    --color-emerald-700: oklch(50.8% 0.118 165.612);\n    --color-emerald-800: oklch(43.2% 0.095 166.913);\n    --color-emerald-900: oklch(37.8% 0.077 168.94);\n    --color-emerald-950: oklch(26.2% 0.051 172.552);\n\n    --color-teal-50: oklch(98.4% 0.014 180.72);\n    --color-teal-100: oklch(95.3% 0.051 180.801);\n    --color-teal-200: oklch(91% 0.096 180.426);\n    --color-teal-300: oklch(85.5% 0.138 181.071);\n    --color-teal-400: oklch(77.7% 0.152 181.912);\n    --color-teal-500: oklch(70.4% 0.14 182.503);\n    --color-teal-600: oklch(60% 0.118 184.704);\n    --color-teal-700: oklch(51.1% 0.096 186.391);\n    --color-teal-800: oklch(43.7% 0.078 188.216);\n    --color-teal-900: oklch(38.6% 0.063 188.416);\n    --color-teal-950: oklch(27.7% 0.046 192.524);\n\n    --color-cyan-50: oklch(98.4% 0.019 200.873);\n    --color-cyan-100: oklch(95.6% 0.045 203.388);\n    --color-cyan-200: oklch(91.7% 0.08 205.041);\n    --color-cyan-300: oklch(86.5% 0.127 207.078);\n    --color-cyan-400: oklch(78.9% 0.154 211.53);\n    --color-cyan-500: oklch(71.5% 0.143 215.221);\n    --color-cyan-600: oklch(60.9% 0.126 221.723);\n    --color-cyan-700: oklch(52% 0.105 223.128);\n    --color-cyan-800: oklch(45% 0.085 224.283);\n    --color-cyan-900: oklch(39.8% 0.07 227.392);\n    --color-cyan-950: oklch(30.2% 0.056 229.695);\n\n    --color-sky-50: oklch(97.7% 0.013 236.62);\n    --color-sky-100: oklch(95.1% 0.026 236.824);\n    --color-sky-200: oklch(90.1% 0.058 230.902);\n    --color-sky-300: oklch(82.8% 0.111 230.318);\n    --color-sky-400: oklch(74.6% 0.16 232.661);\n    --color-sky-500: oklch(68.5% 0.169 237.323);\n    --color-sky-600: oklch(58.8% 0.158 241.966);\n    --color-sky-700: oklch(50% 0.134 242.749);\n    --color-sky-800: oklch(44.3% 0.11 240.79);\n    --color-sky-900: oklch(39.1% 0.09 240.876);\n    --color-sky-950: oklch(29.3% 0.066 243.157);\n\n    --color-blue-50: oklch(97% 0.014 254.604);\n    --color-blue-100: oklch(93.2% 0.032 255.585);\n    --color-blue-200: oklch(88.2% 0.059 254.128);\n    --color-blue-300: oklch(80.9% 0.105 251.813);\n    --color-blue-400: oklch(70.7% 0.165 254.624);\n    --color-blue-500: oklch(62.3% 0.214 259.815);\n    --color-blue-600: oklch(54.6% 0.245 262.881);\n    --color-blue-700: oklch(48.8% 0.243 264.376);\n    --color-blue-800: oklch(42.4% 0.199 265.638);\n    --color-blue-900: oklch(37.9% 0.146 265.522);\n    --color-blue-950: oklch(28.2% 0.091 267.935);\n\n    --color-indigo-50: oklch(96.2% 0.018 272.314);\n    --color-indigo-100: oklch(93% 0.034 272.788);\n    --color-indigo-200: oklch(87% 0.065 274.039);\n    --color-indigo-300: oklch(78.5% 0.115 274.713);\n    --color-indigo-400: oklch(67.3% 0.182 276.935);\n    --color-indigo-500: oklch(58.5% 0.233 277.117);\n    --color-indigo-600: oklch(51.1% 0.262 276.966);\n    --color-indigo-700: oklch(45.7% 0.24 277.023);\n    --color-indigo-800: oklch(39.8% 0.195 277.366);\n    --color-indigo-900: oklch(35.9% 0.144 278.697);\n    --color-indigo-950: oklch(25.7% 0.09 281.288);\n\n    --color-violet-50: oklch(96.9% 0.016 293.756);\n    --color-violet-100: oklch(94.3% 0.029 294.588);\n    --color-violet-200: oklch(89.4% 0.057 293.283);\n    --color-violet-300: oklch(81.1% 0.111 293.571);\n    --color-violet-400: oklch(70.2% 0.183 293.541);\n    --color-violet-500: oklch(60.6% 0.25 292.717);\n    --color-violet-600: oklch(54.1% 0.281 293.009);\n    --color-violet-700: oklch(49.1% 0.27 292.581);\n    --color-violet-800: oklch(43.2% 0.232 292.759);\n    --color-violet-900: oklch(38% 0.189 293.745);\n    --color-violet-950: oklch(28.3% 0.141 291.089);\n\n    --color-purple-50: oklch(97.7% 0.014 308.299);\n    --color-purple-100: oklch(94.6% 0.033 307.174);\n    --color-purple-200: oklch(90.2% 0.063 306.703);\n    --color-purple-300: oklch(82.7% 0.119 306.383);\n    --color-purple-400: oklch(71.4% 0.203 305.504);\n    --color-purple-500: oklch(62.7% 0.265 303.9);\n    --color-purple-600: oklch(55.8% 0.288 302.321);\n    --color-purple-700: oklch(49.6% 0.265 301.924);\n    --color-purple-800: oklch(43.8% 0.218 303.724);\n    --color-purple-900: oklch(38.1% 0.176 304.987);\n    --color-purple-950: oklch(29.1% 0.149 302.717);\n\n    --color-fuchsia-50: oklch(97.7% 0.017 320.058);\n    --color-fuchsia-100: oklch(95.2% 0.037 318.852);\n    --color-fuchsia-200: oklch(90.3% 0.076 319.62);\n    --color-fuchsia-300: oklch(83.3% 0.145 321.434);\n    --color-fuchsia-400: oklch(74% 0.238 322.16);\n    --color-fuchsia-500: oklch(66.7% 0.295 322.15);\n    --color-fuchsia-600: oklch(59.1% 0.293 322.896);\n    --color-fuchsia-700: oklch(51.8% 0.253 323.949);\n    --color-fuchsia-800: oklch(45.2% 0.211 324.591);\n    --color-fuchsia-900: oklch(40.1% 0.17 325.612);\n    --color-fuchsia-950: oklch(29.3% 0.136 325.661);\n\n    --color-pink-50: oklch(97.1% 0.014 343.198);\n    --color-pink-100: oklch(94.8% 0.028 342.258);\n    --color-pink-200: oklch(89.9% 0.061 343.231);\n    --color-pink-300: oklch(82.3% 0.12 346.018);\n    --color-pink-400: oklch(71.8% 0.202 349.761);\n    --color-pink-500: oklch(65.6% 0.241 354.308);\n    --color-pink-600: oklch(59.2% 0.249 0.584);\n    --color-pink-700: oklch(52.5% 0.223 3.958);\n    --color-pink-800: oklch(45.9% 0.187 3.815);\n    --color-pink-900: oklch(40.8% 0.153 2.432);\n    --color-pink-950: oklch(28.4% 0.109 3.907);\n\n    --color-rose-50: oklch(96.9% 0.015 12.422);\n    --color-rose-100: oklch(94.1% 0.03 12.58);\n    --color-rose-200: oklch(89.2% 0.058 10.001);\n    --color-rose-300: oklch(81% 0.117 11.638);\n    --color-rose-400: oklch(71.2% 0.194 13.428);\n    --color-rose-500: oklch(64.5% 0.246 16.439);\n    --color-rose-600: oklch(58.6% 0.253 17.585);\n    --color-rose-700: oklch(51.4% 0.222 16.935);\n    --color-rose-800: oklch(45.5% 0.188 13.697);\n    --color-rose-900: oklch(41% 0.159 10.272);\n    --color-rose-950: oklch(27.1% 0.105 12.094);\n\n    --color-slate-50: oklch(98.4% 0.003 247.858);\n    --color-slate-100: oklch(96.8% 0.007 247.896);\n    --color-slate-200: oklch(92.9% 0.013 255.508);\n    --color-slate-300: oklch(86.9% 0.022 252.894);\n    --color-slate-400: oklch(70.4% 0.04 256.788);\n    --color-slate-500: oklch(55.4% 0.046 257.417);\n    --color-slate-600: oklch(44.6% 0.043 257.281);\n    --color-slate-700: oklch(37.2% 0.044 257.287);\n    --color-slate-800: oklch(27.9% 0.041 260.031);\n    --color-slate-900: oklch(20.8% 0.042 265.755);\n    --color-slate-950: oklch(12.9% 0.042 264.695);\n\n    --color-gray-50: oklch(98.5% 0.002 247.839);\n    --color-gray-100: oklch(96.7% 0.003 264.542);\n    --color-gray-200: oklch(92.8% 0.006 264.531);\n    --color-gray-300: oklch(87.2% 0.01 258.338);\n    --color-gray-400: oklch(70.7% 0.022 261.325);\n    --color-gray-500: oklch(55.1% 0.027 264.364);\n    --color-gray-600: oklch(44.6% 0.03 256.802);\n    --color-gray-700: oklch(37.3% 0.034 259.733);\n    --color-gray-800: oklch(27.8% 0.033 256.848);\n    --color-gray-900: oklch(21% 0.034 264.665);\n    --color-gray-950: oklch(13% 0.028 261.692);\n\n    --color-zinc-50: oklch(98.5% 0 none);\n    --color-zinc-100: oklch(96.7% 0.001 286.375);\n    --color-zinc-200: oklch(92% 0.004 286.32);\n    --color-zinc-300: oklch(87.1% 0.006 286.286);\n    --color-zinc-400: oklch(70.5% 0.015 286.067);\n    --color-zinc-500: oklch(55.2% 0.016 285.938);\n    --color-zinc-600: oklch(44.2% 0.017 285.786);\n    --color-zinc-700: oklch(37% 0.013 285.805);\n    --color-zinc-800: oklch(27.4% 0.006 286.033);\n    --color-zinc-900: oklch(21% 0.006 285.885);\n    --color-zinc-950: oklch(14.1% 0.005 285.823);\n\n    --color-neutral-50: oklch(98.5% 0 none);\n    --color-neutral-100: oklch(97% 0 none);\n    --color-neutral-200: oklch(92.2% 0 none);\n    --color-neutral-300: oklch(87% 0 none);\n    --color-neutral-400: oklch(70.8% 0 none);\n    --color-neutral-500: oklch(55.6% 0 none);\n    --color-neutral-600: oklch(43.9% 0 none);\n    --color-neutral-700: oklch(37.1% 0 none);\n    --color-neutral-800: oklch(26.9% 0 none);\n    --color-neutral-900: oklch(20.5% 0 none);\n    --color-neutral-950: oklch(14.5% 0 none);\n\n    --color-stone-50: oklch(98.5% 0.001 106.423);\n    --color-stone-100: oklch(97% 0.001 106.424);\n    --color-stone-200: oklch(92.3% 0.003 48.717);\n    --color-stone-300: oklch(86.9% 0.005 56.366);\n    --color-stone-400: oklch(70.9% 0.01 56.259);\n    --color-stone-500: oklch(55.3% 0.013 58.071);\n    --color-stone-600: oklch(44.4% 0.011 73.639);\n    --color-stone-700: oklch(37.4% 0.01 67.558);\n    --color-stone-800: oklch(26.8% 0.007 34.298);\n    --color-stone-900: oklch(21.6% 0.006 56.043);\n    --color-stone-950: oklch(14.7% 0.004 49.25);\n\n    --color-mauve-50: oklch(98.5% 0 none);\n    --color-mauve-100: oklch(96% 0.003 325.6);\n    --color-mauve-200: oklch(92.2% 0.005 325.62);\n    --color-mauve-300: oklch(86.5% 0.012 325.68);\n    --color-mauve-400: oklch(71.1% 0.019 323.02);\n    --color-mauve-500: oklch(54.2% 0.034 322.5);\n    --color-mauve-600: oklch(43.5% 0.029 321.78);\n    --color-mauve-700: oklch(36.4% 0.029 323.89);\n    --color-mauve-800: oklch(26.3% 0.024 320.12);\n    --color-mauve-900: oklch(21.2% 0.019 322.12);\n    --color-mauve-950: oklch(14.5% 0.008 326);\n\n    --color-olive-50: oklch(98.8% 0.003 106.5);\n    --color-olive-100: oklch(96.6% 0.005 106.5);\n    --color-olive-200: oklch(93% 0.007 106.5);\n    --color-olive-300: oklch(88% 0.011 106.6);\n    --color-olive-400: oklch(73.7% 0.021 106.9);\n    --color-olive-500: oklch(58% 0.031 107.3);\n    --color-olive-600: oklch(46.6% 0.025 107.3);\n    --color-olive-700: oklch(39.4% 0.023 107.4);\n    --color-olive-800: oklch(28.6% 0.016 107.4);\n    --color-olive-900: oklch(22.8% 0.013 107.4);\n    --color-olive-950: oklch(15.3% 0.006 107.1);\n\n    --color-mist-50: oklch(98.7% 0.002 197.1);\n    --color-mist-100: oklch(96.3% 0.002 197.1);\n    --color-mist-200: oklch(92.5% 0.005 214.3);\n    --color-mist-300: oklch(87.2% 0.007 219.6);\n    --color-mist-400: oklch(72.3% 0.014 214.4);\n    --color-mist-500: oklch(56% 0.021 213.5);\n    --color-mist-600: oklch(45% 0.017 213.2);\n    --color-mist-700: oklch(37.8% 0.015 216);\n    --color-mist-800: oklch(27.5% 0.011 216.9);\n    --color-mist-900: oklch(21.8% 0.008 223.9);\n    --color-mist-950: oklch(14.8% 0.004 228.8);\n\n    --color-taupe-50: oklch(98.6% 0.002 67.8);\n    --color-taupe-100: oklch(96% 0.002 17.2);\n    --color-taupe-200: oklch(92.2% 0.005 34.3);\n    --color-taupe-300: oklch(86.8% 0.007 39.5);\n    --color-taupe-400: oklch(71.4% 0.014 41.2);\n    --color-taupe-500: oklch(54.7% 0.021 43.1);\n    --color-taupe-600: oklch(43.8% 0.017 39.3);\n    --color-taupe-700: oklch(36.7% 0.016 35.7);\n    --color-taupe-800: oklch(26.8% 0.011 36.5);\n    --color-taupe-900: oklch(21.4% 0.009 43.1);\n    --color-taupe-950: oklch(14.7% 0.004 49.3);\n\n    --color-black: #000;\n    --color-white: #fff;\n\n    --spacing: 0.25rem;\n\n    --breakpoint-sm: 40rem;\n    --breakpoint-md: 48rem;\n    --breakpoint-lg: 64rem;\n    --breakpoint-xl: 80rem;\n    --breakpoint-2xl: 96rem;\n\n    --container-3xs: 16rem;\n    --container-2xs: 18rem;\n    --container-xs: 20rem;\n    --container-sm: 24rem;\n    --container-md: 28rem;\n    --container-lg: 32rem;\n    --container-xl: 36rem;\n    --container-2xl: 42rem;\n    --container-3xl: 48rem;\n    --container-4xl: 56rem;\n    --container-5xl: 64rem;\n    --container-6xl: 72rem;\n    --container-7xl: 80rem;\n\n    --text-xs: 0.75rem;\n    --text-xs--line-height: calc(1 / 0.75);\n    --text-sm: 0.875rem;\n    --text-sm--line-height: calc(1.25 / 0.875);\n    --text-base: 1rem;\n    --text-base--line-height: calc(1.5 / 1);\n    --text-lg: 1.125rem;\n    --text-lg--line-height: calc(1.75 / 1.125);\n    --text-xl: 1.25rem;\n    --text-xl--line-height: calc(1.75 / 1.25);\n    --text-2xl: 1.5rem;\n    --text-2xl--line-height: calc(2 / 1.5);\n    --text-3xl: 1.875rem;\n    --text-3xl--line-height: calc(2.25 / 1.875);\n    --text-4xl: 2.25rem;\n    --text-4xl--line-height: calc(2.5 / 2.25);\n    --text-5xl: 3rem;\n    --text-5xl--line-height: 1;\n    --text-6xl: 3.75rem;\n    --text-6xl--line-height: 1;\n    --text-7xl: 4.5rem;\n    --text-7xl--line-height: 1;\n    --text-8xl: 6rem;\n    --text-8xl--line-height: 1;\n    --text-9xl: 8rem;\n    --text-9xl--line-height: 1;\n\n    --font-weight-thin: 100;\n    --font-weight-extralight: 200;\n    --font-weight-light: 300;\n    --font-weight-normal: 400;\n    --font-weight-medium: 500;\n    --font-weight-semibold: 600;\n    --font-weight-bold: 700;\n    --font-weight-extrabold: 800;\n    --font-weight-black: 900;\n\n    --tracking-tighter: -0.05em;\n    --tracking-tight: -0.025em;\n    --tracking-normal: 0em;\n    --tracking-wide: 0.025em;\n    --tracking-wider: 0.05em;\n    --tracking-widest: 0.1em;\n\n    --leading-tight: 1.25;\n    --leading-snug: 1.375;\n    --leading-normal: 1.5;\n    --leading-relaxed: 1.625;\n    --leading-loose: 2;\n\n    --radius-xs: 0.125rem;\n    --radius-sm: 0.25rem;\n    --radius-md: 0.375rem;\n    --radius-lg: 0.5rem;\n    --radius-xl: 0.75rem;\n    --radius-2xl: 1rem;\n    --radius-3xl: 1.5rem;\n    --radius-4xl: 2rem;\n\n    --shadow-2xs: 0 1px rgb(0 0 0 / 0.05);\n    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n    --shadow-md:\n      0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n    --shadow-lg:\n      0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n    --shadow-xl:\n      0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);\n    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);\n\n    --inset-shadow-2xs: inset 0 1px rgb(0 0 0 / 0.05);\n    --inset-shadow-xs: inset 0 1px 1px rgb(0 0 0 / 0.05);\n    --inset-shadow-sm: inset 0 2px 4px rgb(0 0 0 / 0.05);\n\n    --drop-shadow-xs: 0 1px 1px rgb(0 0 0 / 0.05);\n    --drop-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.15);\n    --drop-shadow-md: 0 3px 3px rgb(0 0 0 / 0.12);\n    --drop-shadow-lg: 0 4px 4px rgb(0 0 0 / 0.15);\n    --drop-shadow-xl: 0 9px 7px rgb(0 0 0 / 0.1);\n    --drop-shadow-2xl: 0 25px 25px rgb(0 0 0 / 0.15);\n\n    --text-shadow-2xs: 0px 1px 0px rgb(0 0 0 / 0.15);\n    --text-shadow-xs: 0px 1px 1px rgb(0 0 0 / 0.2);\n    --text-shadow-sm:\n      0px 1px 0px rgb(0 0 0 / 0.075), 0px 1px 1px rgb(0 0 0 / 0.075),\n      0px 2px 2px rgb(0 0 0 / 0.075);\n    --text-shadow-md:\n      0px 1px 1px rgb(0 0 0 / 0.1), 0px 1px 2px rgb(0 0 0 / 0.1),\n      0px 2px 4px rgb(0 0 0 / 0.1);\n    --text-shadow-lg:\n      0px 1px 2px rgb(0 0 0 / 0.1), 0px 3px 2px rgb(0 0 0 / 0.1),\n      0px 4px 8px rgb(0 0 0 / 0.1);\n\n    --ease-in: cubic-bezier(0.4, 0, 1, 1);\n    --ease-out: cubic-bezier(0, 0, 0.2, 1);\n    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);\n\n    --animate-spin: spin 1s linear infinite;\n    --animate-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;\n    --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n    --animate-bounce: bounce 1s infinite;\n\n    @keyframes spin {\n      to {\n        transform: rotate(360deg);\n      }\n    }\n\n    @keyframes ping {\n      75%,\n      100% {\n        transform: scale(2);\n        opacity: 0;\n      }\n    }\n\n    @keyframes pulse {\n      50% {\n        opacity: 0.5;\n      }\n    }\n\n    @keyframes bounce {\n      0%,\n      100% {\n        transform: translateY(-25%);\n        animation-timing-function: cubic-bezier(0.8, 0, 1, 1);\n      }\n\n      50% {\n        transform: none;\n        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n      }\n    }\n\n    --blur-xs: 4px;\n    --blur-sm: 8px;\n    --blur-md: 12px;\n    --blur-lg: 16px;\n    --blur-xl: 24px;\n    --blur-2xl: 40px;\n    --blur-3xl: 64px;\n\n    --perspective-dramatic: 100px;\n    --perspective-near: 300px;\n    --perspective-normal: 500px;\n    --perspective-midrange: 800px;\n    --perspective-distant: 1200px;\n\n    --aspect-video: 16 / 9;\n\n    --default-transition-duration: 150ms;\n    --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n    --default-font-family: --theme(--font-sans, initial);\n    --default-font-feature-settings: --theme(\n      --font-sans--font-feature-settings,\n      initial\n    );\n    --default-font-variation-settings: --theme(\n      --font-sans--font-variation-settings,\n      initial\n    );\n    --default-mono-font-family: --theme(--font-mono, initial);\n    --default-mono-font-feature-settings: --theme(\n      --font-mono--font-feature-settings,\n      initial\n    );\n    --default-mono-font-variation-settings: --theme(\n      --font-mono--font-variation-settings,\n      initial\n    );\n  }\n\n  /* Deprecated */\n  @theme default inline reference {\n    --blur: 8px;\n    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n    --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);\n    --drop-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 1px 1px rgb(0 0 0 / 0.06);\n    --radius: 0.25rem;\n    --max-width-prose: 65ch;\n  }\n}\n\n@layer base {\n  /*\n  1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n  2. Remove default margins and padding\n  3. Reset all borders.\n*/\n\n  *,\n  ::after,\n  ::before,\n  ::backdrop,\n  ::file-selector-button {\n    box-sizing: border-box; /* 1 */\n    margin: 0; /* 2 */\n    padding: 0; /* 2 */\n    border: 0 solid; /* 3 */\n  }\n\n  /*\n  1. Use a consistent sensible line-height in all browsers.\n  2. Prevent adjustments of font size after orientation changes in iOS.\n  3. Use a more readable tab size.\n  4. Use the user\'s configured `sans` font-family by default.\n  5. Use the user\'s configured `sans` font-feature-settings by default.\n  6. Use the user\'s configured `sans` font-variation-settings by default.\n  7. Disable tap highlights on iOS.\n*/\n\n  html,\n  :host {\n    line-height: 1.5; /* 1 */\n    -webkit-text-size-adjust: 100%; /* 2 */\n    tab-size: 4; /* 3 */\n    font-family: --theme(\n      --default-font-family,\n      -apple-system,\n      BlinkMacSystemFont,\n      "Segoe UI",\n      Roboto,\n      "Helvetica Neue",\n      "Noto Sans",\n      Arial,\n      sans-serif,\n      "Apple Color Emoji",\n      "Segoe UI Emoji",\n      "Segoe UI Symbol",\n      "Noto Color Emoji"\n    ); /* 4 */\n    font-feature-settings: --theme(\n      --default-font-feature-settings,\n      normal\n    ); /* 5 */\n    font-variation-settings: --theme(\n      --default-font-variation-settings,\n      normal\n    ); /* 6 */\n    -webkit-tap-highlight-color: transparent; /* 7 */\n  }\n\n  /*\n  1. Add the correct height in Firefox.\n  2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n  3. Reset the default border style to a 1px solid border.\n*/\n\n  hr {\n    height: 0; /* 1 */\n    color: inherit; /* 2 */\n    border-top-width: 1px; /* 3 */\n  }\n\n  /*\n  Add the correct text decoration in Chrome, Edge, and Safari.\n*/\n\n  abbr:where([title]) {\n    -webkit-text-decoration: underline dotted;\n    text-decoration: underline dotted;\n  }\n\n  /*\n  Remove the default font size and weight for headings.\n*/\n\n  h1,\n  h2,\n  h3,\n  h4,\n  h5,\n  h6 {\n    font-size: inherit;\n    font-weight: inherit;\n  }\n\n  /*\n  Reset links to optimize for opt-in styling instead of opt-out.\n*/\n\n  a {\n    color: inherit;\n    -webkit-text-decoration: inherit;\n    text-decoration: inherit;\n  }\n\n  /*\n  Add the correct font weight in Edge and Safari.\n*/\n\n  b,\n  strong {\n    font-weight: bolder;\n  }\n\n  /*\n  1. Use the user\'s configured `mono` font-family by default.\n  2. Use the user\'s configured `mono` font-feature-settings by default.\n  3. Use the user\'s configured `mono` font-variation-settings by default.\n  4. Correct the odd `em` font sizing in all browsers.\n*/\n\n  code,\n  kbd,\n  samp,\n  pre {\n    font-family: --theme(\n      --default-mono-font-family,\n      ui-monospace,\n      SFMono-Regular,\n      Menlo,\n      Monaco,\n      Consolas,\n      "Liberation Mono",\n      "Courier New",\n      monospace\n    ); /* 1 */\n    font-feature-settings: --theme(\n      --default-mono-font-feature-settings,\n      normal\n    ); /* 2 */\n    font-variation-settings: --theme(\n      --default-mono-font-variation-settings,\n      normal\n    ); /* 3 */\n    font-size: 1em; /* 4 */\n  }\n\n  /*\n  Add the correct font size in all browsers.\n*/\n\n  small {\n    font-size: 80%;\n  }\n\n  /*\n  Prevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\n  sub,\n  sup {\n    font-size: 75%;\n    line-height: 0;\n    position: relative;\n    vertical-align: baseline;\n  }\n\n  sub {\n    bottom: -0.25em;\n  }\n\n  sup {\n    top: -0.5em;\n  }\n\n  /*\n  1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n  2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n  3. Remove gaps between table borders by default.\n*/\n\n  table {\n    text-indent: 0; /* 1 */\n    border-color: inherit; /* 2 */\n    border-collapse: collapse; /* 3 */\n  }\n\n  /*\n  Use the modern Firefox focus style for all focusable elements.\n*/\n\n  :-moz-focusring:where(:not(iframe)) {\n    outline: auto;\n  }\n\n  /*\n  Add the correct vertical alignment in Chrome and Firefox.\n*/\n\n  progress {\n    vertical-align: baseline;\n  }\n\n  /*\n  Add the correct display in Chrome and Safari.\n*/\n\n  summary {\n    display: list-item;\n  }\n\n  /*\n  Make lists unstyled by default.\n*/\n\n  ol,\n  ul,\n  menu {\n    list-style: none;\n  }\n\n  /*\n  1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n  2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n      This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\n  img,\n  svg,\n  video,\n  canvas,\n  audio,\n  iframe,\n  embed,\n  object {\n    display: block; /* 1 */\n    vertical-align: middle; /* 2 */\n  }\n\n  /*\n  Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\n  img,\n  video {\n    max-width: 100%;\n    height: auto;\n  }\n\n  /*\n  1. Inherit font styles in all browsers.\n  2. Remove border radius in all browsers.\n  3. Remove background color in all browsers.\n  4. Ensure consistent opacity for disabled states in all browsers.\n*/\n\n  button,\n  input,\n  select,\n  optgroup,\n  textarea,\n  ::file-selector-button {\n    font: inherit; /* 1 */\n    font-feature-settings: inherit; /* 1 */\n    font-variation-settings: inherit; /* 1 */\n    letter-spacing: inherit; /* 1 */\n    color: inherit; /* 1 */\n    border-radius: 0; /* 2 */\n    background-color: transparent; /* 3 */\n    opacity: 1; /* 4 */\n  }\n\n  /*\n  Restore default font weight.\n*/\n\n  :where(select:is([multiple], [size])) optgroup {\n    font-weight: bolder;\n  }\n\n  /*\n  Restore indentation.\n*/\n\n  :where(select:is([multiple], [size])) optgroup option {\n    padding-inline-start: 20px;\n  }\n\n  /*\n  Restore space after button.\n*/\n\n  ::file-selector-button {\n    margin-inline-end: 4px;\n  }\n\n  /*\n  Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n*/\n\n  ::placeholder {\n    opacity: 1;\n  }\n\n  /*\n  Set the default placeholder color to a semi-transparent version of the current text color in browsers that do not\n  crash when using `color-mix(\u2026)` with `currentcolor`. (https://github.com/tailwindlabs/tailwindcss/issues/17194)\n*/\n\n  @supports (not (-webkit-appearance: -apple-pay-button)) /* Not Safari */ or\n    (contain-intrinsic-size: 1px) /* Safari 17+ */ {\n    ::placeholder {\n      color: color-mix(in oklab, currentcolor 50%, transparent);\n    }\n  }\n\n  /*\n  Prevent resizing textareas horizontally by default.\n*/\n\n  textarea {\n    resize: vertical;\n  }\n\n  /*\n  Remove the inner padding in Chrome and Safari on macOS.\n*/\n\n  ::-webkit-search-decoration {\n    -webkit-appearance: none;\n  }\n\n  /*\n  1. Ensure date/time inputs have the same height when empty in iOS Safari.\n  2. Ensure text alignment can be changed on date/time inputs in iOS Safari.\n*/\n\n  ::-webkit-date-and-time-value {\n    min-height: 1lh; /* 1 */\n    text-align: inherit; /* 2 */\n  }\n\n  /*\n  Prevent height from changing on date/time inputs in macOS Safari when the input is set to `display: block`.\n*/\n\n  ::-webkit-datetime-edit {\n    display: inline-flex;\n  }\n\n  /*\n  Remove excess padding from pseudo-elements in date/time inputs to ensure consistent height across browsers.\n*/\n\n  ::-webkit-datetime-edit-fields-wrapper {\n    padding: 0;\n  }\n\n  ::-webkit-datetime-edit,\n  ::-webkit-datetime-edit-year-field,\n  ::-webkit-datetime-edit-month-field,\n  ::-webkit-datetime-edit-day-field,\n  ::-webkit-datetime-edit-hour-field,\n  ::-webkit-datetime-edit-minute-field,\n  ::-webkit-datetime-edit-second-field,\n  ::-webkit-datetime-edit-millisecond-field,\n  ::-webkit-datetime-edit-meridiem-field {\n    padding-block: 0;\n  }\n\n  /*\n  Center dropdown marker shown on inputs with paired `<datalist>`s in Chrome. (https://github.com/tailwindlabs/tailwindcss/issues/18499)\n*/\n\n  ::-webkit-calendar-picker-indicator {\n    line-height: 1;\n  }\n\n  /*\n  Remove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n  :-moz-ui-invalid {\n    box-shadow: none;\n  }\n\n  /*\n  Correct the inability to style the border radius in iOS Safari.\n*/\n\n  button,\n  input:where([type="button"], [type="reset"], [type="submit"]),\n  ::file-selector-button {\n    appearance: button;\n  }\n\n  /*\n  Correct the cursor style of increment and decrement buttons in Safari.\n*/\n\n  ::-webkit-inner-spin-button,\n  ::-webkit-outer-spin-button {\n    height: auto;\n  }\n\n  /*\n  Make elements with the HTML hidden attribute stay hidden by default.\n*/\n\n  [hidden]:where(:not([hidden="until-found"])) {\n    display: none !important;\n  }\n}\n\n@layer utilities {\n  @tailwind utilities;\n}\n';
 
   // js/hooks.mjs
+  if (typeof globalThis.structuredClone !== "function") {
+    globalThis.structuredClone = (value) => JSON.parse(JSON.stringify(value));
+  }
   var modules = {
     daisyui: { default: daisyui_default },
     "@tailwindcss/typography": { default: import_typography2.default }
@@ -26732,16 +26735,16 @@ ${O4}`);
   }
   function parseFileUrl(input) {
     const match = fileRegex.exec(input);
-    const path = match[2];
-    return makeUrl("file:", "", match[1] || "", "", isAbsolutePath(path) ? path : "/" + path, match[3] || "", match[4] || "");
+    const path2 = match[2];
+    return makeUrl("file:", "", match[1] || "", "", isAbsolutePath(path2) ? path2 : "/" + path2, match[3] || "", match[4] || "");
   }
-  function makeUrl(scheme, user, host, port, path, query, hash) {
+  function makeUrl(scheme, user, host, port, path2, query, hash) {
     return {
       scheme,
       user,
       host,
       port,
-      path,
+      path: path2,
       query,
       hash,
       type: 7
@@ -26771,11 +26774,11 @@ ${O4}`);
     url.type = input ? input.startsWith("?") ? 3 : input.startsWith("#") ? 2 : 4 : 1;
     return url;
   }
-  function stripPathFilename(path) {
-    if (path.endsWith("/.."))
-      return path;
-    const index = path.lastIndexOf("/");
-    return path.slice(0, index + 1);
+  function stripPathFilename(path2) {
+    if (path2.endsWith("/.."))
+      return path2;
+    const index = path2.lastIndexOf("/");
+    return path2.slice(0, index + 1);
   }
   function mergePaths(url, base2) {
     normalizePath(base2, base2.type);
@@ -26813,14 +26816,14 @@ ${O4}`);
       pieces[pointer++] = piece;
       positive++;
     }
-    let path = "";
+    let path2 = "";
     for (let i = 1; i < pointer; i++) {
-      path += "/" + pieces[i];
+      path2 += "/" + pieces[i];
     }
-    if (!path || addTrailingSlash && !path.endsWith("/..")) {
-      path += "/";
+    if (!path2 || addTrailingSlash && !path2.endsWith("/..")) {
+      path2 += "/";
     }
-    url.path = path;
+    url.path = path2;
   }
   function resolve(input, base2) {
     if (!input && !base2)
@@ -26861,13 +26864,13 @@ ${O4}`);
       case 3:
         return queryHash;
       case 4: {
-        const path = url.path.slice(1);
-        if (!path)
+        const path2 = url.path.slice(1);
+        if (!path2)
           return queryHash || ".";
-        if (isRelative(base2 || input) && !isRelative(path)) {
-          return "./" + path + queryHash;
+        if (isRelative(base2 || input) && !isRelative(path2)) {
+          return "./" + path2 + queryHash;
         }
-        return path + queryHash;
+        return path2 + queryHash;
       }
       case 5:
         return url.path + queryHash;
@@ -26877,10 +26880,10 @@ ${O4}`);
   }
 
   // node_modules/@jridgewell/trace-mapping/dist/trace-mapping.mjs
-  function stripFilename(path) {
-    if (!path) return "";
-    const index = path.lastIndexOf("/");
-    return path.slice(0, index + 1);
+  function stripFilename(path2) {
+    if (!path2) return "";
+    const index = path2.lastIndexOf("/");
+    return path2.slice(0, index + 1);
   }
   function resolver(mapUrl, sourceRoot) {
     const from = stripFilename(mapUrl);
@@ -27360,13 +27363,70 @@ Did you specify these with the most recent transformation maps first?`
   // js/shims/lightningcss.mjs
   var Features = {
     Nesting: 1,
-    MediaQueries: 2,
-    LogicalProperties: 4,
-    DirSelector: 8,
-    LightDark: 16
+    NotSelectorList: 2,
+    DirSelector: 4,
+    LangSelectorList: 8,
+    IsSelector: 16,
+    TextDecorationThicknessPercent: 32,
+    MediaIntervalSyntax: 64,
+    MediaRangeSyntax: 128,
+    CustomMediaQueries: 256,
+    ClampFunction: 512,
+    ColorFunction: 1024,
+    OklabColors: 2048,
+    LabColors: 4096,
+    P3Colors: 8192,
+    HexAlphaColors: 16384,
+    SpaceSeparatedColorNotation: 32768,
+    FontFamilySystemUi: 65536,
+    DoublePositionGradients: 131072,
+    VendorPrefixes: 262144,
+    LogicalProperties: 524288,
+    LightDark: 1048576,
+    Selectors: 31,
+    MediaQueries: 448,
+    Colors: 1113088
   };
-  function transform() {
-    throw new Error("lightningcss wasm host is not wired yet");
+  function transform(opts = {}) {
+    const input = opts.code;
+    let css = typeof input === "string" ? input : bytesToString(input);
+    if (opts.minify) {
+      css = minifyCSS(css);
+    }
+    return {
+      code: {
+        toString() {
+          return css;
+        }
+      },
+      map: void 0,
+      warnings: []
+    };
+  }
+  function bytesToString(code) {
+    if (code == null) {
+      return "";
+    }
+    if (typeof code === "string") {
+      return code;
+    }
+    if (typeof code.toString === "function" && code.toString !== Array.prototype.toString) {
+      const s = code.toString("utf8");
+      if (typeof s === "string" && s !== "[object Object]") {
+        return s;
+      }
+    }
+    if (code.length != null) {
+      let out = "";
+      for (let i = 0; i < code.length; i++) {
+        out += String.fromCharCode(code[i]);
+      }
+      return out;
+    }
+    return String(code);
+  }
+  function minifyCSS(css) {
+    return css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\s+/g, " ").replace(/\s*([{}:;,])\s*/g, "$1").trim();
   }
 
   // node_modules/magic-string/dist/magic-string.es.mjs
@@ -29461,27 +29521,234 @@ ${t.join(`
   var import_require_cache = __toESM(require_require_cache(), 1);
 
   // js/shims/oxide.mjs
+  var import_fs2 = __toESM(__require("fs"), 1);
+  var import_path3 = __toESM(__require("path"), 1);
+  var skipDir = /* @__PURE__ */ new Set(["node_modules", ".git", "dist", "vendor"]);
+  var _Scanner_instances, collect_fn, extract_fn;
   var Scanner = class {
-    constructor() {
-      throw new Error("oxide wasm host is not wired yet");
+    constructor(opts = {}) {
+      __privateAdd(this, _Scanner_instances);
+      this.sources = opts.sources || [];
+      this._files = [];
+      this._scanned = [];
+    }
+    scan() {
+      const candidates = /* @__PURE__ */ new Set();
+      this._files = __privateMethod(this, _Scanner_instances, collect_fn).call(this);
+      this._scanned = this._files.slice();
+      for (const file of this._files) {
+        __privateMethod(this, _Scanner_instances, extract_fn).call(this, readText(file), candidates);
+      }
+      return Array.from(candidates);
+    }
+    scanFiles(input) {
+      const candidates = /* @__PURE__ */ new Set();
+      for (const item of input || []) {
+        const content = item.content != null ? item.content : item.file ? readText(item.file) : "";
+        if (item.file) {
+          this._scanned.push(item.file);
+        }
+        __privateMethod(this, _Scanner_instances, extract_fn).call(this, content, candidates);
+      }
+      return Array.from(candidates);
+    }
+    getCandidatesWithPositions(input) {
+      const content = input.content != null ? input.content : input.file ? readText(input.file) : "";
+      return extractPositions(content);
+    }
+    get files() {
+      return this._files;
+    }
+    get scannedFiles() {
+      return this._scanned;
+    }
+    get globs() {
+      return this.normalizedSources;
+    }
+    get normalizedSources() {
+      return this.sources.map((s) => ({ base: s.base, pattern: s.pattern }));
     }
   };
+  _Scanner_instances = new WeakSet();
+  collect_fn = function() {
+    const files = /* @__PURE__ */ new Set();
+    const excluded = /* @__PURE__ */ new Set();
+    for (const src of this.sources) {
+      const dest = src.negated ? excluded : files;
+      collectGlob(src.base, src.pattern, dest);
+    }
+    for (const f2 of excluded) {
+      files.delete(f2);
+    }
+    return Array.from(files);
+  };
+  extract_fn = function(content, candidates) {
+    for (const tok of extractTokens(content)) {
+      candidates.add(tok);
+    }
+  };
+  function readText(file) {
+    return import_fs2.default.readFileSync(file, "utf8");
+  }
+  function collectGlob(base2, pattern, out) {
+    if (!base2 || !pattern) {
+      return;
+    }
+    if (!/[*?]/.test(pattern)) {
+      const abs = import_path3.default.resolve(base2, pattern);
+      if (isFile(abs)) {
+        out.add(abs);
+      }
+      return;
+    }
+    const re5 = globRegExp(pattern);
+    const root = globRoot(base2, pattern);
+    walk(root, (file) => {
+      const rel = relPosix(base2, file);
+      if (re5.test(rel) || re5.test(relPosix(root, file))) {
+        out.add(file);
+      }
+    });
+  }
+  function globRoot(base2, pattern) {
+    const parts = pattern.split(/[\\/]/);
+    const prefix = [];
+    for (const part of parts) {
+      if (part.includes("*") || part.includes("?")) {
+        break;
+      }
+      prefix.push(part);
+    }
+    return import_path3.default.resolve(base2, ...prefix);
+  }
+  function globRegExp(pattern) {
+    let body = "";
+    for (let i = 0; i < pattern.length; i++) {
+      const c2 = pattern[i];
+      if (c2 === "*" && pattern[i + 1] === "*") {
+        const next = pattern[i + 2];
+        if (next === "/" || next === "\\") {
+          body += "(?:.*/)?";
+          i += 2;
+          continue;
+        }
+        body += ".*";
+        i += 1;
+        continue;
+      }
+      if (c2 === "*") {
+        body += "[^/]*";
+        continue;
+      }
+      if (c2 === "?") {
+        body += "[^/]";
+        continue;
+      }
+      if ("\\^$+{}[]()|.".includes(c2)) {
+        body += "\\" + c2;
+        continue;
+      }
+      if (c2 === "\\") {
+        body += "[\\\\/]";
+        continue;
+      }
+      body += c2 === "/" ? "[\\\\/]" : c2;
+    }
+    return new RegExp("^" + body + "$");
+  }
+  function walk(dir, fn2) {
+    let entries;
+    try {
+      entries = import_fs2.default.readdirSync(dir, { withFileTypes: true });
+    } catch (e3) {
+      return;
+    }
+    for (const ent of entries) {
+      const p2 = import_path3.default.join(dir, ent.name);
+      if (ent.isDirectory()) {
+        if (skipDir.has(ent.name)) {
+          continue;
+        }
+        walk(p2, fn2);
+        continue;
+      }
+      if (ent.isFile()) {
+        fn2(p2);
+      }
+    }
+  }
+  function isFile(p2) {
+    try {
+      return import_fs2.default.statSync(p2).isFile();
+    } catch (e3) {
+      return false;
+    }
+  }
+  function relPosix(from, to) {
+    return import_path3.default.relative(from, to).split(import_path3.default.sep).join("/");
+  }
+  var classAttr = /(?:class|className)\s*=\s*(?:"([^"]*)"|'([^']*)'|`([^`]*)`)/g;
+  function extractTokens(content) {
+    const out = /* @__PURE__ */ new Set();
+    classAttr.lastIndex = 0;
+    let m;
+    while (m = classAttr.exec(content)) {
+      addClassList(m[1] || m[2] || m[3] || "", out);
+    }
+    const tokenRe = /!?[a-zA-Z][\w@<>\[\]!/%#.:-]*/g;
+    while (m = tokenRe.exec(content)) {
+      const tok = m[0];
+      if (looksLikeCandidate(tok)) {
+        out.add(tok);
+      }
+    }
+    return out;
+  }
+  function extractPositions(content) {
+    const out = [];
+    const tokenRe = /!?[a-zA-Z][\w@<>\[\]!/%#.:-]*/g;
+    let m;
+    while (m = tokenRe.exec(content)) {
+      if (looksLikeCandidate(m[0])) {
+        out.push({ candidate: m[0], position: m.index });
+      }
+    }
+    return out;
+  }
+  function addClassList(s, out) {
+    for (const part of s.split(/\s+/)) {
+      if (part) {
+        out.add(part);
+      }
+    }
+  }
+  function looksLikeCandidate(tok) {
+    if (tok.length < 2) {
+      return false;
+    }
+    if (tok.includes("-") || tok.includes(":") || tok.includes("/") || tok.includes("[")) {
+      return true;
+    }
+    return /^(flex|grid|block|hidden|inline|relative|absolute|fixed|sticky|contents|btn|card|link|menu|navbar|drawer|modal|table|badge|tab|swap|prose|input|textarea|select|checkbox|toggle|alert|toast|footer|hero|divider|stack|join|mask|kbd|stat|steps|timeline|loading|skeleton|avatar|chat|collapse|dropdown|tooltip|indicator|countdown|radial|range|rating|file|label|fieldset)$/.test(
+      tok
+    );
+  }
 
   // node_modules/@tailwindcss/cli/dist/index.mjs
-  var import_fs2 = __require("fs");
+  var import_fs3 = __require("fs");
   var import_promises3 = __toESM(__require("fs/promises"), 1);
-  var import_path3 = __toESM(__require("path"), 1);
-  var import_fs3 = __toESM(__require("fs"), 1);
   var import_path4 = __toESM(__require("path"), 1);
+  var import_fs4 = __toESM(__require("fs"), 1);
+  var import_path5 = __toESM(__require("path"), 1);
   var import_util = __require("util");
   var import_picocolors = __toESM(require_picocolors(), 1);
   var import_enhanced_resolve2 = __toESM(require_lib3(), 1);
-  var import_fs4 = __toESM(__require("fs"), 1);
+  var import_fs5 = __toESM(__require("fs"), 1);
   var import_module2 = __require("module");
   var import_promises4 = __toESM(__require("fs/promises"), 1);
-  var import_path5 = __toESM(__require("path"), 1);
-  var import_promises5 = __toESM(__require("fs/promises"), 1);
   var import_path6 = __toESM(__require("path"), 1);
+  var import_promises5 = __toESM(__require("fs/promises"), 1);
+  var import_path7 = __toESM(__require("path"), 1);
   var import_readline = __require("readline");
   var import_picocolors2 = __toESM(require_picocolors(), 1);
   var import_meta2 = {};
@@ -29602,7 +29869,7 @@ ${t.join(`
     }
     return He3(e3);
   }
-  var It3 = import_enhanced_resolve2.default.ResolverFactory.createResolver({ fileSystem: new import_enhanced_resolve2.default.CachedInputFileSystem(import_fs4.default, 4e3), useSyncFileSystemCalls: true, extensions: [".css"], mainFields: ["style"], conditionNames: ["style"] });
+  var It3 = import_enhanced_resolve2.default.ResolverFactory.createResolver({ fileSystem: new import_enhanced_resolve2.default.CachedInputFileSystem(import_fs5.default, 4e3), useSyncFileSystemCalls: true, extensions: [".css"], mainFields: ["style"], conditionNames: ["style"] });
   function _e4(e3) {
     let t = typeof e3 == "number" ? BigInt(e3) : e3;
     return t < /* @__PURE__ */ BigInt("1000") ? `${t}ns` : (t /= /* @__PURE__ */ BigInt("1000"), t < /* @__PURE__ */ BigInt("1000") ? `${t}\xB5s` : (t /= /* @__PURE__ */ BigInt("1000"), t < /* @__PURE__ */ BigInt("1000") ? `${t}ms` : (t /= /* @__PURE__ */ BigInt("1000"), t < /* @__PURE__ */ BigInt("60") ? `${t}s` : (t /= /* @__PURE__ */ BigInt("60"), t < /* @__PURE__ */ BigInt("60") ? `${t}m` : (t /= /* @__PURE__ */ BigInt("60"), t < /* @__PURE__ */ BigInt("24") ? `${t}h` : (t /= /* @__PURE__ */ BigInt("24"), `${t}d`))))));
@@ -29615,8 +29882,8 @@ ${t.join(`
     return `${import_picocolors.default.dim(import_picocolors.default.blue("`"))}${import_picocolors.default.blue(e3)}${import_picocolors.default.dim(import_picocolors.default.blue("`"))}`;
   }
   function ne3(e3, t = process.cwd(), { preferAbsoluteIfShorter: n2 = true } = {}) {
-    let i = import_path4.default.relative(t, e3);
-    return i.startsWith("..") || (i = `.${import_path4.default.sep}${i}`), n2 && i.length > e3.length ? e3 : i;
+    let i = import_path5.default.relative(t, e3);
+    return i.startsWith("..") || (i = `.${import_path5.default.sep}${i}`), n2 && i.length > e3.length ? e3 : i;
   }
   function z3(e3, t) {
     let n2 = e3.split(" "), i = [], r = "", s = 0;
@@ -29643,7 +29910,7 @@ ${t.join(`
   }
   function et2() {
     if (typeof globalThis.__tw_version == "string") return globalThis.__tw_version;
-    let { version: e3 } = JSON.parse(import_fs3.default.readFileSync(Te2("tailwindcss/package.json"), "utf-8"));
+    let { version: e3 } = JSON.parse(import_fs4.default.readFileSync(Te2("tailwindcss/package.json"), "utf-8"));
     return e3;
   }
   function se3() {
@@ -29659,7 +29926,7 @@ ${t.join(`
       if (await import_promises4.default.readFile(e3, "utf8") === t) return;
     } catch (e4) {
     }
-    await import_promises4.default.mkdir(import_path5.default.dirname(e3), { recursive: true }), await import_promises4.default.writeFile(e3, t, "utf8");
+    await import_promises4.default.mkdir(import_path6.default.dirname(e3), { recursive: true }), await import_promises4.default.writeFile(e3, t, "utf8");
   }
   var de4 = String.raw;
   var u2 = me2.DEBUG;
@@ -29697,15 +29964,15 @@ ${t.join(`
       e3["--silent"] || T2();
       let t = J3(be2, new Et2());
       u2 && t.start("[@tailwindcss/cli] (initial build)");
-      let n2 = import_path3.default.resolve(e3["--cwd"]);
-      e3["--output"] && e3["--output"] !== "-" && (e3["--output"] = import_path3.default.resolve(n2, e3["--output"]));
-      e3["--input"] && e3["--input"] !== "-" && (e3["--input"] = import_path3.default.resolve(n2, e3["--input"]), (0, import_fs2.existsSync)(e3["--input"]) || (T2(`Specified input file ${F3(ne3(e3["--input"]))} does not exist.`), process.exit(1)));
+      let n2 = import_path4.default.resolve(e3["--cwd"]);
+      e3["--output"] && e3["--output"] !== "-" && (e3["--output"] = import_path4.default.resolve(n2, e3["--output"]));
+      e3["--input"] && e3["--input"] !== "-" && (e3["--input"] = import_path4.default.resolve(n2, e3["--input"]), (0, import_fs3.existsSync)(e3["--input"]) || (T2(`Specified input file ${F3(ne3(e3["--input"]))} does not exist.`), process.exit(1)));
       e3["--input"] === e3["--output"] && e3["--input"] !== "-" && (T2(`Specified input file ${F3(ne3(e3["--input"]))} and output file ${F3(ne3(e3["--output"]))} are identical.`), process.exit(1));
       e3["--map"] === "-" && (T2("Use --map without a value to inline the source map."), process.exit(1));
       e3["--poll"] === void 0 && (T2("Use --poll with a non-zero value in milliseconds."), process.exit(1));
       let i = e3["--poll"] === true ? lt3 : e3["--poll"];
       i !== false && i <= 0 && (T2("Specified polling interval must be a positive number."), process.exit(1));
-      e3["--map"] && e3["--map"] !== true && (e3["--map"] = import_path3.default.resolve(n2, e3["--map"]));
+      e3["--map"] && e3["--map"] !== true && (e3["--map"] = import_path4.default.resolve(n2, e3["--map"]));
       let r = process.hrtime.bigint();
       let s = e3["--input"] ? e3["--input"] === "-" ? await se3() : await import_promises3.default.readFile(e3["--input"], "utf-8") : de4`
         @import 'tailwindcss';
@@ -29723,7 +29990,7 @@ ${t.join(`
           if (g4["--map"] === true) h4 += `
 `, h4 += S3.inline;
           else if (typeof g4["--map"] == "string") {
-            let p2 = g4["--output"] && g4["--output"] !== "-" ? import_path3.default.dirname(import_path3.default.resolve(g4["--output"])) : process.cwd(), E3 = import_path3.default.resolve(g4["--map"]), B4 = import_path3.default.relative(p2, E3);
+            let p2 = g4["--output"] && g4["--output"] !== "-" ? import_path4.default.dirname(import_path4.default.resolve(g4["--output"])) : process.cwd(), E3 = import_path4.default.resolve(g4["--map"]), B4 = import_path4.default.relative(p2, E3);
             h4 += `
 `, h4 += S3.comment(B4), u2 && d2.start("Write source map"), await ce2(g4["--map"], S3.raw), u2 && d2.end("Write source map");
           }
@@ -29731,8 +29998,8 @@ ${t.join(`
         let C2 = h4 !== o2.output;
         return u2 && d2.start("Write output"), g4["--output"] && g4["--output"] !== "-" ? await ce2(g4["--output"], h4) : C2 && ie2(h4), u2 && d2.end("Write output"), o2.output = h4, C2;
       }
-      let l2 = e3["--input"] && e3["--input"] !== "-" ? import_path3.default.resolve(e3["--input"]) : null;
-      let c2 = l2 ? import_path3.default.dirname(l2) : process.cwd();
+      let l2 = e3["--input"] && e3["--input"] !== "-" ? import_path4.default.resolve(e3["--input"]) : null;
+      let c2 = l2 ? import_path4.default.dirname(l2) : process.cwd();
       let m = l2 ? [l2] : [];
       let b3 = m;
       async function w3(_3, S3) {
@@ -29740,7 +30007,7 @@ ${t.join(`
         let g4 = await fu(_3, { from: e3["--output"] ? l2 != null ? l2 : "stdin.css" : void 0, base: c2, onDependency(C2) {
           m.push(C2);
         } }), d2 = (g4.root === "none" ? [] : g4.root === null ? [{ base: n2, pattern: "**/*", negated: false }] : [__spreadProps(__spreadValues({}, g4.root), { negated: false })]).concat(g4.sources);
-        d2.push({ base: import_path3.default.dirname(process.execPath), pattern: import_path3.default.basename(process.execPath), negated: true }), l2 !== null && d2.push({ base: import_path3.default.dirname(l2), pattern: import_path3.default.basename(l2), negated: false });
+        d2.push({ base: import_path4.default.dirname(process.execPath), pattern: import_path4.default.basename(process.execPath), negated: true }), l2 !== null && d2.push({ base: import_path4.default.dirname(l2), pattern: import_path4.default.basename(l2), negated: false });
         let h4 = new Scanner({ sources: d2 });
         return u2 && S3.end("Setup compiler"), [g4, h4];
       }
@@ -29930,7 +30197,7 @@ ${t.join(`
     let n2 = [];
     for (let i of e3) {
       if (t.includes(i)) return { kind: "full" };
-      n2.push({ file: i, extension: import_path3.default.extname(i).slice(1) });
+      n2.push({ file: i, extension: import_path4.default.extname(i).slice(1) });
     }
     return { kind: "incremental", changedFiles: n2 };
   }
@@ -29951,7 +30218,7 @@ ${t.join(`
   }
   async function Oe3(e3) {
     let t = (await Promise.all(e3.normalizedSources.map(async (n2) => {
-      let i = import_path3.default.resolve(n2.base), r = await import_promises3.default.realpath(i).catch(() => i);
+      let i = import_path4.default.resolve(n2.base), r = await import_promises3.default.realpath(i).catch(() => i);
       return import_promises3.default.stat(r).then((s) => s.isDirectory() ? [r] : []).catch(() => []);
     }))).flat(1);
     return Array.from(new Set(t));
@@ -30158,8 +30425,8 @@ ${t.join(`
     if (e3 === null) return pu(ft2`
         @import 'tailwindcss';
       `, { base: t });
-    let n2 = import_path6.default.resolve(t, e3), i = await import_promises5.default.readFile(n2, "utf8");
-    return pu(i, { base: import_path6.default.dirname(n2) });
+    let n2 = import_path7.default.resolve(t, e3), i = await import_promises5.default.readFile(n2, "utf8");
+    return pu(i, { base: import_path7.default.dirname(n2) });
   }
   function Le3(e3) {
     return e3.split(/\r?\n/g).map((t) => t.trim()).filter((t) => t.length > 0);

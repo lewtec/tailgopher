@@ -3,3 +3,4 @@
 /testdata/go-out.css
 *.test
 /bin/
+/tmp/
