@@ -49,6 +49,22 @@ if (result.errors.length > 0) {
   process.exit(1);
 }
 
+const wasmDir = path.join(root, "internal/engine/wasm");
+await fs.mkdir(wasmDir, { recursive: true });
+await fs.copyFile(
+  path.join(root, "node_modules/lightningcss-wasm/lightningcss_node.wasm"),
+  path.join(wasmDir, "lightningcss.wasm"),
+);
+const oxideSrc = path.join(
+  root,
+  "node_modules/@tailwindcss/oxide-wasm32-wasi/tailwindcss-oxide.wasm32-wasi.wasm",
+);
+try {
+  await fs.copyFile(oxideSrc, path.join(wasmDir, "oxide.wasm"));
+} catch {
+  // optional until npm can store the wasm32 package
+}
+
 const out = path.join(root, "internal/engine/bundle.js");
 let js = await fs.readFile(out, "utf8");
 js = js.replace(/\bimport\(([^)]+)\)/g, "globalThis.__tw_import($1)");

@@ -33,6 +33,19 @@ func registerNodeModules(reg *require.Registry) {
 	reg.RegisterNativeModule("node:process", loadProcess)
 }
 
+func registerOfficialWASM(reg *require.Registry, vm *goja.Runtime) {
+	if lc, err := loadLightningMod(vm); err == nil && lc != nil {
+		reg.RegisterNativeModule("lightningcss", func(_ *goja.Runtime, module *goja.Object) {
+			module.Set("exports", lc)
+		})
+	}
+	if ox, err := loadOxideMod(vm); err == nil && ox != nil {
+		reg.RegisterNativeModule("@tailwindcss/oxide", func(_ *goja.Runtime, module *goja.Object) {
+			module.Set("exports", ox)
+		})
+	}
+}
+
 func loadProcess(vm *goja.Runtime, module *goja.Object) {
 	module.Set("exports", vm.Get("process"))
 }

@@ -26,6 +26,9 @@ export const Features = {
 };
 
 export function transform(opts = {}) {
+  if (typeof globalThis.__tw_lightning === "function") {
+    return globalThis.__tw_lightning(opts);
+  }
   const input = opts.code;
   let css = typeof input === "string" ? input : bytesToString(input);
   if (opts.minify) {

@@ -4,3 +4,4 @@
 *.test
 /bin/
 /tmp/
+/internal/engine/wasm/*.wasm

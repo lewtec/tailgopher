@@ -30,6 +30,7 @@ func Run(args []string) error {
 			runErr = err
 			return
 		}
+		registerOfficialWASM(registry, vm)
 		registerNodeModules(registry)
 		registry.RegisterNativeModule(console.ModuleName, console.RequireWithPrinter(slogPrinter{}))
 		registry.Enable(vm)
