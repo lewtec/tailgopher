@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    # Do not trigger on tags: release pushes a tag, which would re-enter this
+    # workflow and mint another version.
   pull_request:
     branches:
       - master
@@ -18,13 +20,17 @@ on:
           - patch
           - minor
           - major
+  schedule:
+    - cron: "0 2 * * 6" # saturday 2am
 
 jobs:
   autorelease:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     steps:
+      # Full history + tags required: svu needs existing tags to bump correctly.
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
@@ -39,6 +45,32 @@ jobs:
 
       - name: Install
         run: mise run install
+
+      - name: Update
+        if: github.event_name != 'pull_request'
+        run: mise run update
+
+      - name: Create Pull Request if there is new stuff from updaters
+        if: github.event_name != 'pull_request'
+        uses: peter-evans/create-pull-request@98357b18bf14b5342f975ff684046ec3b2a07725 # v8
+        id: pr_create
+        with:
+          commit-message: Updater script changes
+          branch: updater-bot
+          delete-branch: true
+          title: "Updater: stuff changed"
+          body: |
+            Changes caused from update scripts
+
+      - name: Stop if a pull request was created
+        if: github.event_name != 'pull_request'
+        env:
+          PR_NUMBER: ${{ steps.pr_create.outputs.pull-request-number }}
+        run: |
+          if [[ -n "$PR_NUMBER" ]]; then
+            echo "The update scripts changed something and a PR was created. Giving up deploy." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
 
       - name: CI
         run: mise run ci
