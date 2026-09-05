@@ -20419,6 +20419,56 @@ Stack:
     })
   );
 
+  // node_modules/daisyui/theme/index.js
+  var escapeCssString = (value) => String(value).replace(
+    /[^a-zA-Z0-9_-]/gu,
+    (character) => `\\${character.codePointAt(0).toString(16)} `
+  );
+  var theme_default = plugin.withOptions((options = {}) => {
+    return ({ addBase }) => {
+      var _b, _c;
+      const _a7 = options, {
+        name = "custom-theme",
+        default: isDefault = false,
+        prefersdark = false,
+        "color-scheme": colorScheme,
+        root = ":root"
+      } = _a7, customThemeTokens = __objRest(_a7, [
+        "name",
+        "default",
+        "prefersdark",
+        "color-scheme",
+        "root"
+      ]);
+      const escapedName = escapeCssString(name);
+      let selector = `${root}:has(input.theme-controller[value="${escapedName}"]:checked),[data-theme="${escapedName}"]`;
+      if (isDefault) {
+        selector = `:where(${root}),${selector}`;
+      }
+      let themeTokens = __spreadValues({}, customThemeTokens);
+      if (object_default[name]) {
+        const builtinTheme = object_default[name];
+        themeTokens = __spreadProps(__spreadValues(__spreadValues({}, builtinTheme), customThemeTokens), {
+          "color-scheme": colorScheme != null ? colorScheme : builtinTheme["color-scheme"]
+        });
+      }
+      const baseStyles = {
+        [selector]: __spreadValues({
+          "color-scheme": (_c = (_b = themeTokens["color-scheme"]) != null ? _b : colorScheme) != null ? _c : "normal"
+        }, themeTokens)
+      };
+      if (prefersdark) {
+        const darkSelector = root === ":root" ? ":root:not([data-theme])" : `${root}:not([data-theme])`;
+        addBase({
+          "@media (prefers-color-scheme: dark)": {
+            [darkSelector]: baseStyles[selector]
+          }
+        });
+      }
+      addBase(baseStyles);
+    };
+  });
+
   // js/hooks.mjs
   var import_typography2 = __toESM(require_src(), 1);
 
@@ -20522,6 +20572,7 @@ Stack:
   }
   var modules = {
     daisyui: { default: daisyui_default },
+    "daisyui/theme": { default: theme_default },
     "@tailwindcss/typography": { default: import_typography2.default }
   };
   globalThis.__tw_files = {

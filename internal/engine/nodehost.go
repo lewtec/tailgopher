@@ -137,19 +137,19 @@ func loadFS(vm *goja.Runtime, module *goja.Object) {
 		}
 		b, err := os.ReadFile(p)
 		if err != nil {
-			panic(vm.ToValue(err.Error()))
+			throwFS(vm, err, "readFile", p)
 		}
 		return vm.ToValue(string(b))
 	})
 	exp.Set("writeFileSync", func(p, data string) {
 		if err := os.WriteFile(p, []byte(data), 0o644); err != nil {
-			panic(vm.ToValue(err.Error()))
+			throwFS(vm, err, "writeFile", p)
 		}
 	})
 	exp.Set("mkdirSync", func(call goja.FunctionCall) goja.Value {
 		p := call.Argument(0).String()
 		if err := os.MkdirAll(p, 0o755); err != nil {
-			panic(vm.ToValue(err.Error()))
+			throwFS(vm, err, "mkdir", p)
 		}
 		return goja.Undefined()
 	})
@@ -157,7 +157,7 @@ func loadFS(vm *goja.Runtime, module *goja.Object) {
 		p := call.Argument(0).String()
 		entries, err := os.ReadDir(p)
 		if err != nil {
-			panic(vm.ToValue(err.Error()))
+			throwFS(vm, err, "scandir", p)
 		}
 		withTypes := false
 		if len(call.Arguments) > 1 {
@@ -195,21 +195,21 @@ func loadFS(vm *goja.Runtime, module *goja.Object) {
 	exp.Set("statSync", func(p string) map[string]any {
 		m, err := statMap(p, false)
 		if err != nil {
-			panic(vm.ToValue(err.Error()))
+			throwFS(vm, err, "stat", p)
 		}
 		return m
 	})
 	exp.Set("lstatSync", func(p string) map[string]any {
 		m, err := statMap(p, true)
 		if err != nil {
-			panic(vm.ToValue(err.Error()))
+			throwFS(vm, err, "lstat", p)
 		}
 		return m
 	})
 	exp.Set("realpathSync", func(p string) string {
 		r, err := filepath.EvalSymlinks(p)
 		if err != nil {
-			panic(vm.ToValue(err.Error()))
+			throwFS(vm, err, "realpath", p)
 		}
 		return r
 	})
@@ -404,11 +404,38 @@ func promiseOf(vm *goja.Runtime, fn func() (any, error)) goja.Value {
 	p, resolve, reject := vm.NewPromise()
 	v, err := fn()
 	if err != nil {
-		_ = reject(err.Error())
+		_ = reject(nodeFSErr(vm, err, "", ""))
 	} else {
 		_ = resolve(v)
 	}
 	return vm.ToValue(p)
+}
+
+func throwFS(vm *goja.Runtime, err error, syscall, path string) {
+	panic(nodeFSErr(vm, err, syscall, path))
+}
+
+func nodeFSErr(vm *goja.Runtime, err error, syscall, path string) *goja.Object {
+	code := "UNKNOWN"
+	switch {
+	case os.IsNotExist(err):
+		code = "ENOENT"
+	case os.IsPermission(err):
+		code = "EACCES"
+	case os.IsExist(err):
+		code = "EEXIST"
+	}
+	o := vm.NewObject()
+	_ = o.Set("name", "Error")
+	_ = o.Set("message", err.Error())
+	_ = o.Set("code", code)
+	if syscall != "" {
+		_ = o.Set("syscall", syscall)
+	}
+	if path != "" {
+		_ = o.Set("path", path)
+	}
+	return o
 }
 
 func attachWebGlobals(vm *goja.Runtime) {
