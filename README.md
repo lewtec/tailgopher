@@ -138,10 +138,6 @@ fails an unresolved plugin. The command does not read your `node_modules`.
 
 ## Relation to Tailwind CSS
 
-<p align="center">
-  <img src="docs/assets/tailwindcss-mark.svg" width="72" alt="Official Tailwind CSS mark">
-</p>
-
 tailgopher does not reimplement the Tailwind design system. It hosts the
 official compiler so a Go module can run it as `go tool tailwind`.
 
@@ -156,10 +152,9 @@ The teal gopher at the top is this project's mark, from
 [issue #2](https://github.com/lewtec/tailgopher/issues/2).
 The hair follows the official Tailwind wave.
 
-The mark in this section is the official Tailwind CSS mark from the
-[Tailwind brand page](https://tailwindcss.com/brand). Tailwind name and logos
-are trademarks of Tailwind Labs Inc. Do not read this repo as an official
-Tailwind Labs release. Do not use those marks in a way that implies endorsement.
+Tailwind name and logos are trademarks of Tailwind Labs Inc.
+See the [Tailwind brand page](https://tailwindcss.com/brand).
+This repo is not an official Tailwind Labs release.
 
 ## Command flags
 
