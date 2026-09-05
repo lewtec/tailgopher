@@ -7,15 +7,6 @@ svu = "3.3.0"
 [tasks.install]
 run = "npm ci"
 
-[tasks.update]
-description = "Bump Go and npm catalog, regenerate bundle and WASM"
-run = '''
-go get ./...
-go mod tidy
-npm update
-go generate ./...
-'''
-
 [tasks.generate]
 description = "Bundle official CLI and copy WASM for go:embed"
 run = "go generate ./..."
