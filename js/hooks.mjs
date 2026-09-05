@@ -3,12 +3,14 @@ if (typeof globalThis.structuredClone !== "function") {
 }
 
 import daisyui from "daisyui";
+import daisyTheme from "daisyui/theme";
 import typography from "@tailwindcss/typography";
 import tailwindPkg from "tailwindcss/package.json";
 import tailwindIndex from "tailwindcss/index.css";
 
 const modules = {
   daisyui: { default: daisyui },
+  "daisyui/theme": { default: daisyTheme },
   "@tailwindcss/typography": { default: typography },
 };
 

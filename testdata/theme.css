@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@plugin "daisyui";
+@plugin "daisyui/theme" {
+  name: "contapila-light";
+  default: true;
+  --color-primary: oklch(38% 0.09 155);
+}
+@source "./index.html";

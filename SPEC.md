@@ -34,7 +34,7 @@ Inherited C (cite the file): `mise.toml` pins Go and Node for maintainers of thi
 | TEC-02 | Scan request from the official CLI | Official Oxide, hosted as WASM in the embedded WASM VM | Candidate list the CLI already expects |
 | TEC-03 | `--minify` / `--optimize` as the official CLI implements them | Official Lightning CSS, hosted as WASM | Optimized stylesheet |
 | TEC-04 | `--watch` / `--poll` as the official CLI implements them | Official CLI watcher. Prefer `--poll` when `@parcel/watcher` cannot load | Rebuilt output CSS |
-| TEC-05 | `@plugin` name the official CLI asks to resolve | Resolve only `daisyui` and `@tailwindcss/typography` from the generated bundle via the CLI’s `__tw_resolve` / `__tw_load` hooks. Unknown names fail as the CLI fails them | Plugin module |
+| TEC-05 | `@plugin` name the official CLI asks to resolve | Resolve `daisyui`, `daisyui/theme`, and `@tailwindcss/typography` from the generated bundle via the CLI’s `__tw_resolve` / `__tw_load` hooks. Unknown names fail as the CLI fails them | Plugin module |
 | TEC-06 | This repo’s `package.json` dependencies | `go generate` runs esbuild and writes the official CLI bundle plus WASM modules into the module | Embeddable engine artifacts |
 
 ## Tooling
@@ -79,7 +79,7 @@ Inherited C (cite the file): `mise.toml` pins Go and Node for maintainers of thi
 | CompileRequest | command flags and input CSS | value | no after parse | invalid flags fail parse | invent a second request shape |
 | Stylesheet | output CSS bytes | value | no | empty is valid | treat as a file tree |
 | CandidateSet | list of class tokens | value | replaced per compile | empty is valid | invent utilities the compiler did not see |
-| PluginName | `daisyui` or `@tailwindcss/typography` | value | no | unknown name is an error | pass a filesystem path as a catalog name |
+| PluginName | `daisyui`, `daisyui/theme`, or `@tailwindcss/typography` | value | no | unknown name is an error | pass a filesystem path as a catalog name |
 | EngineBundle | generated JS plus WASM embedded in the binary | identity = files from TEC-06 | maintainer generate only | missing bundle is a maintainer error | fetch npm at operator runtime |
 
 | Command | Type it mutates | Transition | Bad input |
@@ -91,7 +91,7 @@ Inherited C (cite the file): `mise.toml` pins Go and Node for maintainers of thi
 | ID | Predicate | On | Forbidden bypass |
 |----|-----------|----|------------------|
 | INV-01 | The operator process does not require `node`, `bun`, or `deno` on PATH and does not invoke them | `tailwind` | “fallback to npx if present” |
-| INV-02 | The only `@plugin` names that resolve are `daisyui` and `@tailwindcss/typography` | TEC-05 | loading an operator-supplied `.mjs` or `node_modules` plugin as if it were catalog |
+| INV-02 | The only `@plugin` names that resolve are `daisyui`, `daisyui/theme`, and `@tailwindcss/typography` | TEC-05 | loading an operator-supplied `.mjs` or `node_modules` plugin as if it were catalog |
 | INV-03 | The command writes only the `--output` path (file or stdout) | Stylesheet | rewriting input CSS, writing `tailwind.config.js`, creating `node_modules` |
 | INV-04 | The shipped binary embeds the engine bundle. Running it does not run npm and does not read a sibling `node_modules` | EngineBundle | a multi-file runtime next to the binary |
 | INV-05 | The command is official `@tailwindcss/cli` hosted in-process, not a second Tailwind dialect | TEC-01 | a hand-written flag parser, scanner, or utility table |
@@ -140,6 +140,7 @@ Residual risk: bugs in goja or wazero while evaluating the official bundle. Cata
 
 - [ ] `go run ./cmd/tailwind -i testdata/input.css -o testdata/out.css` writes CSS that contains a utility present in `testdata/index.html` and does not start `node` or `bun`.
 - [ ] The same command with `@plugin "daisyui"` in the input CSS emits a daisyUI rule for a daisyUI class used in the HTML.
+- [ ] The same command with `@plugin "daisyui/theme"` emits the named theme’s tokens.
 - [ ] The same command with `@plugin "@tailwindcss/typography"` emits a `prose` rule when that class is used.
 - [ ] `@plugin "not-in-catalog"` exits 2 and writes no output CSS file.
 - [ ] A machine without Node, Bun, or Deno can compile CSS with the shipped `tailwind` binary.
@@ -161,6 +162,6 @@ Residual risk: bugs in goja or wazero while evaluating the official bundle. Cata
 ## Decision history
 
 - ADR-0001: Host official `@tailwindcss/cli` in goja, with Oxide and Lightning as WASM. Rejected: a second flag parser or compile API. Rejected: wrapping the standalone native binary as the engine. Rejected: a Go rewrite of the design system. Rejected: requiring Node on the operator PATH.
-- ADR-0002: Closed catalog `daisyui` and `@tailwindcss/typography`. Rejected: open loading of operator JS plugins.
+- ADR-0002: Closed catalog `daisyui` (including `daisyui/theme`) and `@tailwindcss/typography`. Rejected: open loading of operator JS plugins.
 - ADR-0003: Maintainers generate the bundle with Node, npm, and esbuild in this repo. The operator binary embeds that bundle. Rejected: a Node-free generate step as a v1 gate.
 - ADR-0004: Ship one self-contained executable. Catalog plugins are baked in. Rejected: requiring a JS runtime on the operator machine. Rejected: resolving `@plugin` from the operator’s `node_modules`.
