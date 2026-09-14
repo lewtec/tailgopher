@@ -6,6 +6,8 @@ github.com/dop251/base64dec v0.0.0-20231022112746-c6c9f9a96217 h1:16iT9CBDOniJwF
 github.com/dop251/base64dec v0.0.0-20231022112746-c6c9f9a96217/go.mod h1:eIb+f24U+eWQCIsj9D/ah+MD9UP+wdxuqzsdLD+mhGM=
 github.com/dop251/goja v0.0.0-20260903201622-f87b40ad7341 h1:Xw5BlyA4EmkkAR09eEHJ/EzZr+VwcIiHDXQKxv41fDU=
 github.com/dop251/goja v0.0.0-20260903201622-f87b40ad7341/go.mod h1:u8yZRUavu+N4EnFFy6J5fVtjE7lEcZ2YyV2GcBXY9c8=
+github.com/dop251/goja v0.0.0-20260911104922-fabc3b8078ad h1:5gT9hQ9h8CplLZfAGgFMcoLqQS6I9T2sZwQOCXy8/3s=
+github.com/dop251/goja v0.0.0-20260911104922-fabc3b8078ad/go.mod h1:u8yZRUavu+N4EnFFy6J5fVtjE7lEcZ2YyV2GcBXY9c8=
 github.com/dop251/goja_nodejs v0.0.0-20260212111938-1f56ff5bcf14 h1:3U8dTgyNBhEQ/GVw0jZW5q+93Zw2gAZPRWhJ9TwV3rM=
 github.com/dop251/goja_nodejs v0.0.0-20260212111938-1f56ff5bcf14/go.mod h1:Tb7Xxye4LX7cT3i8YLvmPMGCV92IOi4CDZvm/V8ylc0=
 github.com/go-sourcemap/sourcemap v2.1.4+incompatible h1:a+iTbH5auLKxaNwQFg0B+TCYl6lbukKPc7b5x0n1s6Q=

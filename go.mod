@@ -3,7 +3,7 @@ module github.com/lewtec/tailgopher
 go 1.27.0
 
 require (
-	github.com/dop251/goja v0.0.0-20260903201622-f87b40ad7341
+	github.com/dop251/goja v0.0.0-20260911104922-fabc3b8078ad
 	github.com/dop251/goja_nodejs v0.0.0-20260212111938-1f56ff5bcf14
 	github.com/tetratelabs/wazero v1.11.0
 )
