@@ -4,7 +4,7 @@ go 1.27.0
 
 require (
 	github.com/dop251/goja v0.0.0-20260903201622-f87b40ad7341
-	github.com/dop251/goja_nodejs v0.0.0-20260212111938-1f56ff5bcf14
+	github.com/dop251/goja_nodejs v0.0.0-20260918173711-b481721df8a2
 	github.com/tetratelabs/wazero v1.11.0
 )
 
